@@ -1,0 +1,152 @@
+[
+  {
+    "owner": {
+      "username": "nqat0919",
+      "avatar": "https://randomuser.me/api/portraits/women/2.jpg",
+      "isFollowed": true
+    },
+    "post": {
+      "description": "Fishing with my friends",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 123,
+      "comments": 456,
+      "isLiked": false
+    },
+    "time": "two minutes ago"
+  },
+  {
+    "owner": {
+      "username": "johnDoe",
+      "avatar": "https://randomuser.me/api/portraits/men/1.jpg",
+      "isFollowed": false
+    },
+    "post": {
+      "description": "Exploring the mountains!",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 234,
+      "comments": 134,
+      "isLiked": true
+    },
+    "time": "ten minutes ago"
+  },
+  {
+    "owner": {
+      "username": "lucyP",
+      "avatar": "https://randomuser.me/api/portraits/women/3.jpg",
+      "isFollowed": true
+    },
+    "post": {
+      "description": "Sunset at the beach",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 89,
+      "comments": 40,
+      "isLiked": false
+    },
+    "time": "one hour ago"
+  },
+  {
+    "owner": {
+      "username": "mike23",
+      "avatar": "https://randomuser.me/api/portraits/men/4.jpg",
+      "isFollowed": false
+    },
+    "post": {
+      "description": "Delicious homemade pizza!",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 340,
+      "comments": 98,
+      "isLiked": true
+    },
+    "time": "two hours ago"
+  },
+  {
+    "owner": {
+      "username": "janeA",
+      "avatar": "https://randomuser.me/api/portraits/women/5.jpg",
+      "isFollowed": true
+    },
+    "post": {
+      "description": "Morning coffee vibes",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 154,
+      "comments": 73,
+      "isLiked": false
+    },
+    "time": "three hours ago"
+  },
+  {
+    "owner": {
+      "username": "tomH",
+      "avatar": "https://randomuser.me/api/portraits/men/6.jpg",
+      "isFollowed": false
+    },
+    "post": {
+      "description": "Hiking trail conquered!",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 432,
+      "comments": 210,
+      "isLiked": true
+    },
+    "time": "five hours ago"
+  },
+  {
+    "owner": {
+      "username": "susanK",
+      "avatar": "https://randomuser.me/api/portraits/women/7.jpg",
+      "isFollowed": true
+    },
+    "post": {
+      "description": "City lights at night",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 221,
+      "comments": 132,
+      "isLiked": false
+    },
+    "time": "yesterday"
+  },
+  {
+    "owner": {
+      "username": "danielM",
+      "avatar": "https://randomuser.me/api/portraits/men/8.jpg",
+      "isFollowed": false
+    },
+    "post": {
+      "description": "Trying out new recipes!",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 189,
+      "comments": 56,
+      "isLiked": true
+    },
+    "time": "two days ago"
+  },
+  {
+    "owner": {
+      "username": "emmaT",
+      "avatar": "https://randomuser.me/api/portraits/women/9.jpg",
+      "isFollowed": true
+    },
+    "post": {
+      "description": "My latest painting",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 274,
+      "comments": 143,
+      "isLiked": false
+    },
+    "time": "three days ago"
+  },
+  {
+    "owner": {
+      "username": "markR",
+      "avatar": "https://randomuser.me/api/portraits/men/2.jpg",
+      "isFollowed": false
+    },
+    "post": {
+      "description": "Weekend getaway",
+      "image": "https://random.imagecdn.app/500/800",
+      "likes": 560,
+      "comments": 210,
+      "isLiked": true
+    },
+    "time": "four days ago"
+  }
+]
