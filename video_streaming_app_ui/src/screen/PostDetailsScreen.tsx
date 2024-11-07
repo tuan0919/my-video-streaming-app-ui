@@ -3,9 +3,9 @@ import {SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
 import FeatherIconIcon from 'react-native-vector-icons/Feather';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import post from '../data/post-details.json';
 import {Image} from 'react-native';
+import FeatherIcon from 'react-native-vector-icons/Feather';
 
 interface PostData {
   owner: {
@@ -61,25 +61,34 @@ function PostContent({data}: {data: PostData}) : React.JSX.Element {
   return (
     <View style={styles.postContent}>
       <View style={styles.postActionList}>
-        <AntDesignIcon name={'heart'} style={{fontSize: 25, color: 'white'}} />
-        <FeatherIconIcon name={'message-square'} style={{fontSize: 25, color: 'white'}} />
-        <FeatherIconIcon name={'share-2'} style={{fontSize: 25, color: 'white'}} />
+        <TouchableOpacity>
+          <AntDesignIcon name={'heart'} style={{fontSize: 25, color: 'white'}} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <FeatherIconIcon name={'message-square'} style={{fontSize: 25, color: 'white'}} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <FeatherIconIcon name={'share-2'} style={{fontSize: 25, color: 'white'}} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{marginLeft: 'auto'}}>
+          <FeatherIcon name="bookmark" style={{fontSize: 30, color: 'white'}} />
+        </TouchableOpacity>
       </View>
-      <View style={{paddingVertical: 20}}>
-        <Text style={{color: 'white'}}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet atque consequatur cumque enim eos eum eveniet, excepturi, illo ipsam, minus molestiae odio officia perferendis qui sequi unde vel vero voluptas.
+      <View>
+        <Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>
+          {data.post.likes} likes
         </Text>
-        <Text style={{color: 'white'}}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet atque consequatur cumque enim eos eum eveniet, excepturi, illo ipsam, minus molestiae odio officia perferendis qui sequi unde vel vero voluptas.
+        <Text style={{color: 'white', fontWeight: 'semibold', fontSize: 20}}>
+          {data.post.description}
         </Text>
-        <Text style={{color: 'white'}}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet atque consequatur cumque enim eos eum eveniet, excepturi, illo ipsam, minus molestiae odio officia perferendis qui sequi unde vel vero voluptas.
-        </Text>
-        <Text style={{color: 'white'}}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet atque consequatur cumque enim eos eum eveniet, excepturi, illo ipsam, minus molestiae odio officia perferendis qui sequi unde vel vero voluptas.
-        </Text>
-        <Text style={{color: 'white'}}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet atque consequatur cumque enim eos eum eveniet, excepturi, illo ipsam, minus molestiae odio officia perferendis qui sequi unde vel vero voluptas.
+        <TouchableOpacity>
+          <Text style={{color: '#7cc0ff', fontSize: 17}}>
+            See all {data.post.comments} comments
+          </Text>
+        </TouchableOpacity>
+        <Text style={{color: 'gray', fontSize: 17}}>
+          {data.post.time}
         </Text>
       </View>
     </View>
@@ -174,10 +183,12 @@ const styles = StyleSheet.create({
   postContent: {
     backgroundColor: 'black',
     display: 'flex',
+    padding: 12,
+    gap: 30,
   },
   postActionList: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
-  }
-})
+  },
+});
