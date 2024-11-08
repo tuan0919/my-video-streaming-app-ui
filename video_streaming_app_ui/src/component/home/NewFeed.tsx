@@ -5,6 +5,7 @@ import user from '../../data/logged-in-user.json';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FeatherIcon from 'react-native-vector-icons/Feather';
+import {useNavigation} from '@react-navigation/native';
 
 interface PostData {
   owner: {
@@ -105,9 +106,12 @@ function PostBody({data} : {data: PostData}) : React.JSX.Element {
 }
 
 function Post({data} : {data: PostData}) : React.JSX.Element {
+  const navigation = useNavigation<any>();
   return (
     <View style={styles.postContainer}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => {
+        navigation.navigate('Post Details');
+      }}>
         <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.post.image}}/>
       </TouchableOpacity>
       <PostBody data={data}/>

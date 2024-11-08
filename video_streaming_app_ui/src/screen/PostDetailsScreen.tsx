@@ -6,6 +6,7 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import post from '../data/post-details.json';
 import {Image} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
+import {useNavigation} from '@react-navigation/native';
 
 interface PostData {
   owner: {
@@ -25,9 +26,10 @@ interface PostData {
 const postData : PostData = post;
 
 function NavigationBar() : React.JSX.Element {
+  const navigation = useNavigation<any>();
   return (
     <View style={styles.navigationHeader}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
         <MaterialIconsIcon name={'navigate-before'} style={styles.headerIcon} />
       </TouchableOpacity>
       <Text style={styles.headerPostText}>Bài viết</Text>
