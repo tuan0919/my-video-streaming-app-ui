@@ -22,6 +22,9 @@ interface Comment {
 const comments : Comment[] = data;
 
 function Comment({comment} : {comment: Comment}) : React.JSX.Element {
+  const renderItem = useCallback(({ item }: { item: Comment }) => {
+    return <Comment comment={item} />;
+  }, []);
   return (
     <View style={styles.commentContainer}>
       <View style={styles.avatarContainer}>
@@ -54,7 +57,8 @@ function Comment({comment} : {comment: Comment}) : React.JSX.Element {
           <View style={{paddingHorizontal: 10, paddingVertical: 20}}>
           <FlatList data={comment.reply}
             ItemSeparatorComponent={separator}
-            renderItem={({item}) => <Comment comment={item}/>}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
           />
           </View>
         }
@@ -74,7 +78,11 @@ const separator = () : React.JSX.Element => {
   return <View style={styles.separator} />;
 };
 
-export default function CommentBottomSheet({children}: {children: React.JSX.Element}) : React.JSX.Element {
+export default function CommentBottomSheet({children} : {children: any}) : React.JSX.Element {
+    const renderItem = useCallback(({ item }: { item: Comment }) => {
+      return <Comment comment={item} />;
+    }, []);
+
     // ref
     const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -89,9 +97,9 @@ export default function CommentBottomSheet({children}: {children: React.JSX.Elem
     }, []);
     // renders
     return (
-      <BottomSheetContext.Provider value={{openBottomSheet}}>
-        {children}
-        <BottomSheet
+        <BottomSheetContext.Provider value={{openBottomSheet}}>
+          {children}
+          <BottomSheet
           ref={bottomSheetRef}
           snapPoints={snapPoints}
           onChange={handleSheetChanges}
@@ -99,41 +107,42 @@ export default function CommentBottomSheet({children}: {children: React.JSX.Elem
           handleIndicatorStyle={{backgroundColor: 'white'}}
           handleStyle={{backgroundColor: 'black'}}
           enablePanDownToClose={true}
-        >
-          <BottomSheetFlatList
-          data={comments}
-          renderItem={({item}) => <Comment comment={item}/>}
-          ItemSeparatorComponent={separator}
-          contentContainerStyle={{
-            padding: 10,
-          }}
-          style={styles.contentContainer}
-          />
-          <View style={{
-            paddingHorizontal: 10,
-            backgroundColor: 'black',
-            flexDirection: 'row',
-            gap: 10,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            }}
           >
-            <TextInput
-              placeholderTextColor={'gray'}
-              cursorColor={'green'}
-              numberOfLines={1}
-              selectionColor={'green'}
-              placeholder="Nhập bình luận"
+            <BottomSheetFlatList
+            data={comments}
+            renderItem={renderItem}
+            ItemSeparatorComponent={separator}
+            contentContainerStyle={{
+              padding: 10,
+            }}
+            keyExtractor={(item, index) => index.toString()}
+            style={styles.contentContainer}
             />
-            <TouchableOpacity>
-              <FeatherIcon name="send" style={{
-                color: 'lightgray',
-                fontSize: 24,
-              }} />
-            </TouchableOpacity>
-          </View>
-        </BottomSheet>
-      </BottomSheetContext.Provider>
+            <View style={{
+              paddingHorizontal: 10,
+              backgroundColor: 'black',
+              flexDirection: 'row',
+              gap: 10,
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              }}
+            >
+              <TextInput
+                placeholderTextColor={'gray'}
+                cursorColor={'green'}
+                numberOfLines={1}
+                selectionColor={'green'}
+                placeholder="Nhập bình luận"
+              />
+              <TouchableOpacity>
+                <FeatherIcon name="send" style={{
+                  color: 'lightgray',
+                  fontSize: 24,
+                }} />
+              </TouchableOpacity>
+            </View>
+          </BottomSheet>
+        </BottomSheetContext.Provider>
     );
 }
 
