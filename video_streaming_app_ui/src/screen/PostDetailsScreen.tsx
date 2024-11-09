@@ -7,6 +7,8 @@ import post from '../data/post-details.json';
 import {Image} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
+import {CommentBottomSheet} from '../component';
+import { useBottomSheet } from '../component/comment/CommentBottomSheet';
 
 interface PostData {
   owner: {
@@ -60,6 +62,7 @@ function PostHeader({data}: {data: PostData}) : React.JSX.Element {
 }
 
 function PostContent({data}: {data: PostData}) : React.JSX.Element {
+  const { openBottomSheet } = useBottomSheet();
   return (
     <View style={styles.postContent}>
       <View style={styles.postActionList}>
@@ -84,7 +87,7 @@ function PostContent({data}: {data: PostData}) : React.JSX.Element {
         <Text style={{color: 'white', fontWeight: 'semibold', fontSize: 20}}>
           {data.post.description}
         </Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={openBottomSheet}>
           <Text style={{color: '#7cc0ff', fontSize: 17}}>
             See all {data.post.comments} comments
           </Text>
@@ -113,8 +116,12 @@ export default function PostDetailsScreen() : React.JSX.Element {
     <SafeAreaView style={{height: '100%'}}>
       <NavigationBar/>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
-        <PostHeader data={postData}/>
-        <PostBody data={postData}/>
+        <CommentBottomSheet>
+          <>
+            <PostHeader data={postData}/>
+            <PostBody data={postData}/>
+          </>
+        </CommentBottomSheet>
       </ScrollView>
     </SafeAreaView>
   );
