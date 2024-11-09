@@ -1,0 +1,118 @@
+[
+    {
+        "profile": {
+            "username": "nqat0919",
+            "avatar": "https://randomuser.me/api/portraits/men/1.jpg"
+        },
+        "content": "💓💓💓",
+        "time": "2 hours ago"
+    },
+    {
+        "profile": {
+            "username": "user123",
+            "avatar": "https://randomuser.me/api/portraits/women/2.jpg"
+        },
+        "content": "😍 Amazing!",
+        "time": "1 hour ago",
+        "reply": [
+            {
+                "profile": {
+                    "username": "coolguy89",
+                    "avatar": "https://randomuser.me/api/portraits/men/3.jpg"
+                },
+                "content": "This is awesome! 👏",
+                "time": "30 minutes ago",
+                "reply": [
+                    {
+                        "profile": {
+                            "username": "mike_hawk",
+                            "avatar": "https://randomuser.me/api/portraits/men/9.jpg"
+                        },
+                        "content": "Too cool! 😎",
+                        "time": "10 minutes ago"
+                    },
+                    {
+                        "profile": {
+                            "username": "jenny_b",
+                            "avatar": "https://randomuser.me/api/portraits/women/10.jpg"
+                        },
+                        "content": "So inspiring! 🌟",
+                        "time": "3 hours ago"
+                    }
+                ]
+            },
+            {
+                "profile": {
+                    "username": "sunshine_girl",
+                    "avatar": "https://randomuser.me/api/portraits/women/4.jpg"
+                },
+                "content": "So beautiful 😍",
+                "time": "45 minutes ago"
+            }
+        ]
+    },
+    {
+        "profile": {
+            "username": "coolguy89",
+            "avatar": "https://randomuser.me/api/portraits/men/3.jpg"
+        },
+        "content": "This is awesome! 👏",
+        "time": "30 minutes ago"
+    },
+    {
+        "profile": {
+            "username": "sunshine_girl",
+            "avatar": "https://randomuser.me/api/portraits/women/4.jpg"
+        },
+        "content": "So beautiful 😍",
+        "time": "45 minutes ago"
+    },
+    {
+        "profile": {
+            "username": "john_doe",
+            "avatar": "https://randomuser.me/api/portraits/men/5.jpg"
+        },
+        "content": "Love it! ❤️",
+        "time": "3 hours ago"
+    },
+    {
+        "profile": {
+            "username": "amazing_anna",
+            "avatar": "https://randomuser.me/api/portraits/women/6.jpg"
+        },
+        "content": "Can't get enough! 💕",
+        "time": "4 hours ago"
+    },
+    {
+        "profile": {
+            "username": "happy_camper",
+            "avatar": "https://randomuser.me/api/portraits/men/7.jpg"
+        },
+        "content": "Simply stunning! ✨",
+        "time": "2 hours ago"
+    },
+    {
+        "profile": {
+            "username": "travel_queen",
+            "avatar": "https://randomuser.me/api/portraits/women/8.jpg"
+        },
+        "content": "Wow! This made my day! 🌞",
+        "time": "5 hours ago"
+    },
+    {
+        "profile": {
+            "username": "mike_hawk",
+            "avatar": "https://randomuser.me/api/portraits/men/9.jpg"
+        },
+        "content": "Too cool! 😎",
+        "time": "10 minutes ago"
+    },
+    {
+        "profile": {
+            "username": "jenny_b",
+            "avatar": "https://randomuser.me/api/portraits/women/10.jpg"
+        },
+        "content": "So inspiring! 🌟",
+        "time": "3 hours ago"
+    }
+]
