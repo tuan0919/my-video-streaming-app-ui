@@ -1,13 +1,12 @@
 import React from 'react';
 import MainContainer from './src/navigator/MainContainer.tsx';
-import {CommentBottomSheet} from './src/component';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 
 function App(): React.JSX.Element {
   return (
     <GestureHandlerRootView style={styles.container}>
-      <CommentBottomSheet/>
+      <MainContainer/>
     </GestureHandlerRootView>
   );
 }
