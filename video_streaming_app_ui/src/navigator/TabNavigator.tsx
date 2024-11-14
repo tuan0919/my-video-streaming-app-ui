@@ -9,7 +9,7 @@ import SearchNavigator from './SearchNavigator.tsx';
 import ProfileNavigator from './ProfileNavigator.tsx';
 import loginUser from '../data/logged-in-user.json';
 import ReelNavigator from './ReelNavigator.tsx';
-import {GalleryScreen} from '../screen';
+import GalleryNavigator from './GalleryNavigator.tsx';
 
 interface User {
   username: string;
@@ -23,16 +23,16 @@ interface RenderTabProps {
   routeName: RouteName;
 }
 
-type RouteName = 'Home' | 'Search' | 'Profile' | 'Reel' | 'Gallery';
+type RouteName = 'Home Navigator' | 'Search Navigator' | 'Profile Navigator' | 'Reel Navigator' | 'Gallery Navigator';
 
 function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
   const color: ColorValue = focused ? 'white' : '#323232FF';
   switch (routeName) {
-    case 'Home':
+    case 'Home Navigator':
       return <FoundationIcon name="home" style={styles.tabIcon} color={color} />;
-    case 'Search':
+    case 'Search Navigator':
       return <IoniconsIcon name="search" style={styles.tabIcon} color={color} />;
-    case 'Reel':
+    case 'Reel Navigator':
       return (
         <View style={styles.mainButton}>
           <Image source={require('../assest/circle.png')} style={{
@@ -49,13 +49,13 @@ function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
           }} />
         </View>
       );
-    case 'Profile':
+    case 'Profile Navigator':
       return (
         <View style={styles.avatarWrapper}>
           <Image source={{uri: currentUser.avatar}} style={styles.avatar}/>;
         </View>
       );
-    case 'Gallery':
+    case 'Gallery Navigator':
       return <MaterialIconsIcon name={'video-collection'} style={styles.tabIcon} color={color} />;
     default:
       return <FoundationIcon name="home" style={styles.tabIcon} color={color} />;
@@ -84,11 +84,11 @@ export default function TabNavigator () : React.JSX.Element {
         }),
       };
     }}>
-      <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Search" component={SearchNavigator} />
-      <Tab.Screen name="Reel" component={ReelNavigator} />
-      <Tab.Screen name="Gallery" component={GalleryScreen} />
-      <Tab.Screen name="Profile" component={ProfileNavigator} />
+      <Tab.Screen name="Home Navigator" component={HomeNavigator} />
+      <Tab.Screen name="Search Navigator" component={SearchNavigator} />
+      <Tab.Screen name="Reel Navigator" component={ReelNavigator} />
+      <Tab.Screen name="Gallery Navigator" component={GalleryNavigator} />
+      <Tab.Screen name="Profile Navigator" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 }
