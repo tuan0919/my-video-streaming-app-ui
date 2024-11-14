@@ -1,14 +1,13 @@
-import {SafeAreaView, StyleSheet, View} from 'react-native';
+import {SafeAreaView, StyleSheet} from 'react-native';
 import React from 'react';
-import {Header, Stories} from '../component';
+import {Header} from '../component';
+import { Text } from 'react-native';
 
 export default function SearchScreen():React.ReactElement {
   return (
     <SafeAreaView style={styles.container}>
       <Header/>
-      <View style={styles.storyContainer}>
-        <Stories/>
-      </View>
+      <Text>Search Screen</Text>
     </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
 import FeatherIconIcon from 'react-native-vector-icons/Feather';
@@ -8,7 +8,8 @@ import {Image} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {CommentBottomSheet} from '../component';
-import { useBottomSheet } from '../component/comment/CommentBottomSheet';
+import commentsData from '../data/comments.json';
+import { CommentSheet } from '../component/comment/CommentBottomSheet';
 
 interface PostData {
   owner: {
@@ -25,7 +26,20 @@ interface PostData {
   };
 }
 
+interface UserProfile {
+  username: string;
+  avatar: string;
+}
+
+interface Comment {
+  profile: UserProfile;
+  content: string;
+  time: string;
+  reply?: Comment[]
+}
+
 const postData : PostData = post;
+const comments : Comment[] = commentsData;
 
 function NavigationBar() : React.JSX.Element {
   const navigation = useNavigation<any>();
@@ -61,15 +75,14 @@ function PostHeader({data}: {data: PostData}) : React.JSX.Element {
   );
 }
 
-function PostContent({data}: {data: PostData}) : React.JSX.Element {
-  const bottomSheetContext = useBottomSheet();
+function PostContent({data, onLoadComment}: {data: PostData, onLoadComment: () => void}) : React.JSX.Element {
   return (
     <View style={styles.postContent}>
       <View style={styles.postActionList}>
         <TouchableOpacity>
           <AntDesignIcon name={'heart'} style={{fontSize: 25, color: 'white'}} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onLoadComment}>
           <FeatherIconIcon name={'message-square'} style={{fontSize: 25, color: 'white'}} />
         </TouchableOpacity>
         <TouchableOpacity>
@@ -87,7 +100,7 @@ function PostContent({data}: {data: PostData}) : React.JSX.Element {
         <Text style={{color: 'white', fontWeight: 'semibold', fontSize: 20}}>
           {data.post.description}
         </Text>
-        <TouchableOpacity onPress={() => bottomSheetContext?.openBottomSheet()}>
+        <TouchableOpacity onPress={onLoadComment}>
           <Text style={{color: '#7cc0ff', fontSize: 17}}>
             See all {data.post.comments} comments
           </Text>
@@ -100,27 +113,21 @@ function PostContent({data}: {data: PostData}) : React.JSX.Element {
   );
 }
 
-function PostBody({data}: {data: PostData}) : React.JSX.Element {
-  return (
-    <View style={styles.postBody}>
-      <View>
-        <Image style={styles.postImage} source={{uri: data.post.thumbnail}} />
-      </View>
-      <PostContent data={postData}/>
-    </View>
-  );
-}
-
 export default function PostDetailsScreen() : React.JSX.Element {
+  const commentSheetRef = useRef<CommentSheet>(null);
   return (
     <SafeAreaView style={{height: '100%'}}>
       <NavigationBar/>
-      <CommentBottomSheet>
         <ScrollView contentContainerStyle={{flexGrow: 1}}>
           <PostHeader data={postData}/>
-          <PostBody data={postData}/>
+          <View style={styles.postBody}>
+            <View>
+              <Image style={styles.postImage} source={{uri: postData.post.thumbnail}} />
+            </View>
+            <PostContent data={postData} onLoadComment={() => commentSheetRef.current?.open()}/>
+          </View>
         </ScrollView>
-      </CommentBottomSheet>
+        <CommentBottomSheet comments={comments} ref={commentSheetRef}/>
     </SafeAreaView>
   );
 }

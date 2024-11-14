@@ -1,14 +1,12 @@
-import {SafeAreaView, StyleSheet, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text} from 'react-native';
 import React from 'react';
-import {Header, Stories} from '../component';
+import {Header} from '../component';
 
 export default function GalleryScreen():React.ReactElement {
   return (
     <SafeAreaView style={styles.container}>
       <Header/>
-      <View style={styles.storyContainer}>
-        <Stories/>
-      </View>
+      <Text>Gallery Screen</Text>
     </SafeAreaView>
   );
 }
