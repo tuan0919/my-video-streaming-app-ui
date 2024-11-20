@@ -9,6 +9,7 @@ export default function MainContainer () : React.JSX.Element {
   return (
     <NavigationContainer>
       <Stack.Navigator
+      initialRouteName="Tab Navigator"
       screenOptions={{
         headerShown: false,
       }}>
