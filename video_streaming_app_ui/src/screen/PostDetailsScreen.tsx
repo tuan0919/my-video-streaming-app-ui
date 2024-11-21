@@ -11,6 +11,7 @@ import {CommentBottomSheet} from '../component';
 import commentsData from '../data/comments.json';
 import { CommentSheet } from '../component/comment/CommentBottomSheet';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Video, { VideoRef } from 'react-native-video';
 
 interface PostData {
   owner: {
@@ -179,6 +180,7 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
 
 export default function PostDetailsScreen() : React.JSX.Element {
   const commentSheetRef = useRef<CommentSheet>(null);
+  const videoRef = useRef<VideoRef>(null);
   const [isFocus, setIsFocus] = useState<boolean>(false);
   return (
     <SafeAreaView style={{height: '100%'}}>
@@ -196,7 +198,22 @@ export default function PostDetailsScreen() : React.JSX.Element {
                 backgroundColor: isFocus ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,0)',
                 pointerEvents: 'none',
               }}/>
-              <Image style={styles.postImage} source={{uri: postData.post.thumbnail}} />
+              <Video
+                // Can be a URL or a local file.
+                source={{
+                  uri: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8'
+                }}
+                // Store reference
+                ref={videoRef}
+                resizeMode="cover"
+                style={[{
+                  zIndex: 0,
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'black',
+                }]}
+                repeat={true}
+              />
               <NavigationBar data={postData} style={{zIndex: 2}}/>
               <PostHeader data={postData}
                 onClosed={() => {
