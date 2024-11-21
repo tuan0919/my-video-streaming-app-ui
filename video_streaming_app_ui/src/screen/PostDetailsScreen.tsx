@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {SafeAreaView, ScrollView, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
-import FeatherIconIcon from 'react-native-vector-icons/Feather';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
+import FontistoIcon from 'react-native-vector-icons/Fontisto';
+import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import post from '../data/post-details.json';
 import {Image} from 'react-native';
-import FeatherIcon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {CommentBottomSheet} from '../component';
 import commentsData from '../data/comments.json';
 import { CommentSheet } from '../component/comment/CommentBottomSheet';
-import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface PostData {
   owner: {
@@ -42,31 +42,30 @@ interface Comment {
 const postData : PostData = post;
 const comments : Comment[] = commentsData;
 
-function NavigationBar() : React.JSX.Element {
+function NavigationBar({data, style}: {data: PostData, style : ViewStyle}) : React.JSX.Element {
   const navigation = useNavigation<any>();
   return (
-    <View style={styles.navigationHeader}>
+    <View style={[styles.navigationHeader, style]}>
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <MaterialIconsIcon name={'navigate-before'} style={styles.headerIcon} />
       </TouchableOpacity>
-      <Text style={styles.headerPostText}>Bài viết</Text>
+      <Text style={styles.headerPostText}>Bài viết của {data.owner.username}</Text>
     </View>
   );
 }
 
-function PostHeader({data}: {data: PostData}) : React.JSX.Element {
-  const [isDescExpanded, setIsDescExpanded] = useState<boolean>(true);
-  const [layoutHeight, setLayoutHeight] = useState(0);
-  const animation = useSharedValue(0);
-  const bodyStyle = useAnimatedStyle(() => {
-    return {
-      height: animation.value > 0 ? withSpring(animation.value) : withTiming(0),
-    };
-  }, []);
+interface PostHeaderProps {
+  data: PostData,
+  onExpanded: () => void,
+  onClosed: () => void,
+  style: ViewStyle,
+}
 
+function PostHeader({data, onExpanded, onClosed, style}: PostHeaderProps) : React.JSX.Element {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const postHeader = useMemo(()=> {
     return (
-      <View style={styles.postHeader}>
+      <View style={[styles.postHeader]}>
         <View style={{borderRadius: 50, borderColor: 'white', borderWidth: 2}}>
           <View style={styles.headerImageContainer}>
             <Image style={styles.headerImage} source={{uri: data.owner.avatar}} />
@@ -84,77 +83,95 @@ function PostHeader({data}: {data: PostData}) : React.JSX.Element {
             marginLeft: 20,
           }}>
             <Text style={styles.followText}>{data.owner.isFollowed ? 'Bỏ theo dõi' : 'Theo dõi'}</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
       </View>
     );
   }, [data]);
+  const heightAnimation = useSharedValue(20);
+  const animatedStyle = useAnimatedStyle(() => ({
+    maxHeight: heightAnimation.value,
+  }));
 
+  const toggleExpand = useCallback(() => {
+    heightAnimation.value = withTiming(isExpanded ? 20 : 150, { duration: 300 });
+    setIsExpanded(() => !isExpanded);
+    !isExpanded ? onExpanded() : onClosed();
+  }, [heightAnimation, isExpanded, onClosed, onExpanded]);
+
+  const viewWrapper : ViewStyle = {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    padding: 10,
+    gap: 10,
+  };
   return (
-    <View style={{
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      padding: 10,
-      gap: 10}}>
+    <View style={[viewWrapper, style]}>
       {postHeader}
-      <ScrollView
+      <Animated.ScrollView
           nestedScrollEnabled={true}
           keyboardShouldPersistTaps={true}
-          style={{maxHeight: 150}}
+          style={[animatedStyle]}
+          contentContainerStyle={{width: '95%'}}
+          showsVerticalScrollIndicator={false}
           >
-           <Animated.View style={[bodyStyle]}>
-            <TouchableWithoutFeedback>
-                <View onLayout={(event : any) => {
-                  animation.value = event.nativeEvent.layout.height;
-                  console.log('height: ', event.nativeEvent.layout.height);
-                  }}>
-                  <Text style={{color: 'white'}}
-                  >
-                  {data.post.description}
-                  {data.post.description}
-                  {data.post.description}
-                  {data.post.description}
-                  {data.post.description}
-                  {data.post.description}
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </Animated.View>
-          </ScrollView>
+           <TouchableWithoutFeedback onPress={toggleExpand}>
+              <Text style={{color: 'white'}}>
+                {data.post.description}
+                {'\n'}
+                {data.post.description}
+                {'\n'}
+                {data.post.description}
+                {'\n'}
+                {data.post.description}
+                {'\n'}
+                {data.post.description}
+                {'\n'}
+                {data.post.description}
+              </Text>
+            </TouchableWithoutFeedback>
+          </Animated.ScrollView>
     </View>
   );
 }
 
-function PostContent({data, onLoadComment}: {data: PostData, onLoadComment: () => void}) : React.JSX.Element {
+
+interface PostContentProps {
+  data: PostData,
+  style: ViewStyle;
+  onLoadComment: () => void
+}
+function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX.Element {
+  const textStyle : TextStyle = {
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    padding: 0,
+    margin: 0,
+  };
+  const iconWrap : ViewStyle = {
+    justifyContent: 'center',
+    alignContent: 'center',
+    gap: 3,
+  };
+  const iconStyle : TextStyle = {
+    fontSize: 25,
+    color: 'white',
+  };
   return (
-    <View style={styles.postContent}>
+    <View style={[styles.postContent, style]}>
       <View style={styles.postActionList}>
-        <TouchableOpacity>
-          <AntDesignIcon name={'heart'} style={{fontSize: 25, color: 'white'}} />
+        <TouchableOpacity style={[iconWrap]}>
+          <AntDesignIcon name={'hearto'} style={iconStyle} />
+          <Text style={[textStyle]}>{data.post.likes}</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onLoadComment}>
-          <FeatherIconIcon name={'message-square'} style={{fontSize: 25, color: 'white'}} />
+        <TouchableOpacity style={[iconWrap]} onPress={onLoadComment}>
+          <FontistoIcon name={'comment'} style={[iconStyle, {transform: [{ scaleX: -1 }]}]} />
+          <Text style={[textStyle]}>{data.post.comments}</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <FeatherIconIcon name={'share-2'} style={{fontSize: 25, color: 'white'}} />
+        <TouchableOpacity style={[iconWrap]}>
+          <IoniconsIcon name="bookmark-outline" style={[iconStyle, {fontSize: 30}]} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={{marginLeft: 'auto'}}>
-          <FeatherIcon name="bookmark" style={{fontSize: 30, color: 'white'}} />
-        </TouchableOpacity>
-      </View>
-      <View>
-        <Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>
-          {data.post.likes} likes
-        </Text>
-        <TouchableOpacity onPress={onLoadComment}>
-          <Text style={{color: '#7cc0ff', fontSize: 17}}>
-            See all {data.post.comments} comments
-          </Text>
-        </TouchableOpacity>
-        <Text style={{color: 'gray', fontSize: 17}}>
-          {data.post.time}
-        </Text>
       </View>
     </View>
   );
@@ -162,16 +179,37 @@ function PostContent({data, onLoadComment}: {data: PostData, onLoadComment: () =
 
 export default function PostDetailsScreen() : React.JSX.Element {
   const commentSheetRef = useRef<CommentSheet>(null);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
   return (
     <SafeAreaView style={{height: '100%'}}>
-      <NavigationBar/>
-        <ScrollView contentContainerStyle={{flexGrow: 1}} nestedScrollEnabled={true}>
+        <ScrollView contentContainerStyle={{flexGrow: 1}}
+        nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        >
           <View style={styles.postBody}>
-            <View>
+              <View style={{
+                position: 'absolute',
+                zIndex: 1,
+                width: '100%',
+                height: '100%',
+                backgroundColor: isFocus ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,0)',
+                pointerEvents: 'none',
+              }}/>
               <Image style={styles.postImage} source={{uri: postData.post.thumbnail}} />
-              <PostHeader data={postData}/>
-            </View>
-            <PostContent data={postData} onLoadComment={() => commentSheetRef.current?.open()}/>
+              <NavigationBar data={postData} style={{zIndex: 2}}/>
+              <PostHeader data={postData}
+                onClosed={() => {
+                  console.log('closed');
+                  setIsFocus(false);
+                }}
+                onExpanded={() => {
+                  console.log('open');
+                  setIsFocus(true);
+                }}
+                style={{zIndex: 2}}
+              />
+              <PostContent data={postData} style={{zIndex: 2}} onLoadComment={() => commentSheetRef.current?.open()}/>
           </View>
         </ScrollView>
         <CommentBottomSheet comments={comments} ref={commentSheetRef}/>
@@ -182,18 +220,18 @@ export default function PostDetailsScreen() : React.JSX.Element {
 const styles = StyleSheet.create({
   navigationHeader: {
     paddingVertical: 10,
-    backgroundColor: 'black',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    position: 'relative',
-    borderBottomColor: 'white',
-    borderWidth: 0.5,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
   },
   headerIcon: {
     color: 'white',
     fontSize: 35,
+    marginLeft: 10,
   },
   headerPostText: {
     fontSize: 20,
@@ -201,7 +239,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     position: 'absolute',
     left: '50%',
-    transform: [{ translateX: '-30%' }],
+    textAlign: 'center',
+    transform: [{translateX: '-50%'}],
   },
   postHeader: {
     flexDirection: 'row',
@@ -233,21 +272,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   postBody: {
-
+    position: 'relative',
   },
   postImage: {
     width: '100%',
-    height: 800,
+    height: '100%',
     resizeMode: 'cover',
   },
   postContent: {
-    backgroundColor: 'black',
     display: 'flex',
     padding: 12,
     gap: 30,
+    position: 'absolute',
+    bottom: '15%',
+    right: 0,
   },
   postActionList: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
   },
