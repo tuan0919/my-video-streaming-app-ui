@@ -1,14 +1,44 @@
-{
-  "owner": {
-    "isFollowed": "true",
-    "username": "tamo_tyan",
-    "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+[
+  {
+    "owner": {
+      "isFollowed": "true",
+      "username": "tamo_tyan",
+      "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+    },
+    "post": {
+      "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
+      "likes": 100,
+      "comments": 24,
+      "time": "1 hour ago",
+      "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+    }
   },
-  "post": {
-    "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
-    "likes": 100,
-    "comments": 50,
-    "time": "1 hour ago",
-    "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+  {
+    "owner": {
+      "isFollowed": "false",
+      "username": "nqat0919",
+      "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+    },
+    "post": {
+      "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
+      "likes": 100,
+      "comments": 11,
+      "time": "3 minutes ago",
+      "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+    }
+  },
+  {
+    "owner": {
+      "isFollowed": "true",
+      "username": "osa_weitfh",
+      "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+    },
+    "post": {
+      "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
+      "likes": 100,
+      "comments": 69,
+      "time": "2 hour ago",
+      "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+    }
   }
-}
+]
