@@ -2,7 +2,7 @@ import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef, us
 import BottomSheet, {
   BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
-import {FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ViewStyle} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import LottieView from 'lottie-react-native';
@@ -82,10 +82,11 @@ export interface CommentSheet {
 }
 
 interface CommentBottomSheetProps {
-  comments: Comment[];
+  comments: Comment[],
+  style: ViewStyle,
 }
 
-const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({comments} , ref) => {
+const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({comments, style} , ref) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -126,6 +127,7 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
     handleStyle={{backgroundColor: 'black'}}
     enablePanDownToClose={true}
     onClose={() => setIsVisible(false)}
+    containerStyle={[style]}
     >
     {isLoading ? (
       <View style={{backgroundColor: 'black', alignItems: 'center', justifyContent: 'center', flex: 1}}>
@@ -142,9 +144,11 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
       ItemSeparatorComponent={separator}
       contentContainerStyle={{
         padding: 10,
+        flexGrow: 1,
       }}
+      nestedScrollEnabled={true}
       keyExtractor={(item, index) => index.toString()}
-      style={styles.contentContainer}
+      style={[styles.contentContainer]}
       initialNumToRender={0}
       />
       <View style={{

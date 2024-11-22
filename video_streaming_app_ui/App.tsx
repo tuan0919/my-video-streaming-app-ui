@@ -2,12 +2,17 @@ import React from 'react';
 import MainContainer from './src/navigator/MainContainer.tsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 function App(): React.JSX.Element {
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <MainContainer/>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.container}>
+        <SafeAreaView style={{flex: 1}}>
+          <MainContainer/>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 
