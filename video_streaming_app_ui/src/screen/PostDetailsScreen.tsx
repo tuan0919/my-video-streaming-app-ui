@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {Dimensions, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FontistoIcon from 'react-native-vector-icons/Fontisto';
@@ -11,7 +11,9 @@ import {CommentBottomSheet} from '../component';
 import commentsData from '../data/comments.json';
 import { CommentSheet } from '../component/comment/CommentBottomSheet';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import Video, { VideoRef } from 'react-native-video';
+import { FlatList } from 'react-native-gesture-handler';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Video from 'react-native-video';
 
 interface PostData {
   owner: {
@@ -40,7 +42,7 @@ interface Comment {
   reply?: Comment[]
 }
 
-const postData : PostData = post;
+const postData : PostData[] = post;
 const comments : Comment[] = commentsData;
 
 function NavigationBar({data, style}: {data: PostData, style : ViewStyle}) : React.JSX.Element {
@@ -107,7 +109,8 @@ function PostHeader({data, onExpanded, onClosed, style}: PostHeaderProps) : Reac
     gap: 10,
   };
   return (
-    <View style={[viewWrapper, style]}>
+    <View style={[viewWrapper, style]}
+    >
       {postHeader}
       <Animated.ScrollView
           nestedScrollEnabled={true}
@@ -178,58 +181,112 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
   );
 }
 
-export default function PostDetailsScreen() : React.JSX.Element {
-  const commentSheetRef = useRef<CommentSheet>(null);
-  const videoRef = useRef<VideoRef>(null);
+function PostDetails({postData : data, play, onLoadComment} : {postData: PostData, play: boolean, onLoadComment : () => void}) {
+  const { height } = Dimensions.get('window');
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const insets = useSafeAreaInsets();
+  useEffect(() => {
+    console.log('Safe Area Insets:', insets);
+  }, [insets]);
   return (
-    <SafeAreaView style={{height: '100%'}}>
-        <ScrollView contentContainerStyle={{flexGrow: 1}}
-        nestedScrollEnabled={true}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-        >
-          <View style={styles.postBody}>
-              <View style={{
-                position: 'absolute',
-                zIndex: 1,
-                width: '100%',
-                height: '100%',
-                backgroundColor: isFocus ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,0)',
-                pointerEvents: 'none',
-              }}/>
-              <Video
-                // Can be a URL or a local file.
-                source={{
-                  uri: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8'
-                }}
-                // Store reference
-                ref={videoRef}
-                resizeMode="cover"
-                style={[{
-                  zIndex: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'black',
-                }]}
-                repeat={true}
-              />
-              <NavigationBar data={postData} style={{zIndex: 2}}/>
-              <PostHeader data={postData}
-                onClosed={() => {
-                  console.log('closed');
-                  setIsFocus(false);
-                }}
-                onExpanded={() => {
-                  console.log('open');
-                  setIsFocus(true);
-                }}
-                style={{zIndex: 2}}
-              />
-              <PostContent data={postData} style={{zIndex: 2}} onLoadComment={() => commentSheetRef.current?.open()}/>
-          </View>
-        </ScrollView>
-        <CommentBottomSheet comments={comments} ref={commentSheetRef}/>
+    <View style={{height: height - 44 - 21}}>
+      <View style={[styles.postBody]}>
+          <View
+            style={{
+              position: 'absolute',
+              zIndex: 1,
+              width: '100%',
+              height: '100%',
+              backgroundColor: isFocus ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,0)',
+              pointerEvents: 'none',
+            }}
+          />
+          {!play ? <Image
+            source={{
+              uri: 'https://cdn.wallpapersafari.com/94/72/CNhaU1.jpg',
+            }}
+            style={{
+              width: '100%',
+              height: undefined,
+              flex: 1,
+            }}
+            resizeMode="cover"
+          /> : <Video source={{uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'}}
+          resizeMode="cover"
+          muted
+          repeat
+          style={{
+            width: '100%',
+            flex: 1,
+          }}
+          />}
+          <NavigationBar data={data} style={{ zIndex: 2 }} />
+          <PostHeader
+            data={data}
+            onClosed={() => {
+              console.log('closed');
+              setIsFocus(false);
+            }}
+            onExpanded={() => {
+              console.log('open');
+              setIsFocus(true);
+            }}
+            style={{ zIndex: 2 }}
+          />
+          <PostContent
+            data={data}
+            style={{ zIndex: 2 }}
+            onLoadComment={onLoadComment}
+          />
+      </View>
+    </View>
+  );
+}
+
+export default function PostDetailsScreen() : React.JSX.Element {
+  const insets = useSafeAreaInsets();
+  const [playingVideo, setPlayingVideo] = useState<string>(postData[0].owner.username);
+  useEffect(() => {
+    console.log('Safe Area Insets:', insets);
+  }, [insets]);
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: { item: PostData }[] }) => {
+      console.log(
+        'Viewable Items:',
+        viewableItems.map(({ item }) => item.owner.username)
+      );
+      const current = viewableItems[0]?.item.owner.username; // Đảm bảo không bị undefined
+      setPlayingVideo(current);
+    },
+    []
+  );
+  const viewabilityConfigCallbackPairs = useRef([
+    {viewabilityConfig: {viewAreaCoveragePercentThreshold: 50}, onViewableItemsChanged },
+  ]);
+  const commentSheetRef = useRef<CommentSheet>(null);
+  return (
+    <SafeAreaView>
+      <FlatList
+      style={{ flexGrow: 1, backgroundColor: 'gray' }}
+      contentContainerStyle={{ backgroundColor: 'blue'}}
+      horizontal={false} // Cuộn dọc
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled={true}
+      data={postData}
+      windowSize={5}
+      initialNumToRender={3}
+      pagingEnabled
+      renderItem={({item}) => <PostDetails play={item.owner.username === playingVideo} postData={item} onLoadComment={() => commentSheetRef.current?.open()}/>}
+      viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+      />
+      <CommentBottomSheet
+        style={{
+          zIndex: 4,
+          flex: 1,
+        }}
+        comments={comments}
+        ref={commentSheetRef}
+      />
     </SafeAreaView>
   );
 }
@@ -290,6 +347,8 @@ const styles = StyleSheet.create({
   },
   postBody: {
     position: 'relative',
+    height: '100%',
+    width: '100%',
   },
   postImage: {
     width: '100%',
