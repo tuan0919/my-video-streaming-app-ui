@@ -213,7 +213,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
             resizeMode="cover"
           /> : <Video source={{uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'}}
           resizeMode="cover"
-          muted
+          paused={true}
           repeat
           style={{
             width: '100%',
