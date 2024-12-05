@@ -1,10 +1,12 @@
-import {FlatList, Image, ImageStyle, SafeAreaView, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
-import React, { useCallback, useMemo } from 'react';
+import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import React, { useMemo } from 'react';
 import { Text } from 'react-native';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import posted_posts from '../data/user-profile-posted.json';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
+import { ExploreFriends } from '../component';
+import { useNavigation } from '@react-navigation/native';
 
 type Post = {
   image: string,
@@ -177,13 +179,12 @@ const ProfileInfo = () : React.JSX.Element => {
 };
 
 
-const ProfileActions = () : React.JSX.Element => {
+const ProfileActions = ({onPressEditProfile} : {onPressEditProfile: () => void}) : React.JSX.Element => {
   type ProfileActions_Style = {
     container: ViewStyle,
     actionButton: ViewStyle,
     actionText: TextStyle,
   }
-
   const {container, actionButton, actionText} = useMemo<ProfileActions_Style>(() => ({
     container: {
       flexDirection: 'row',
@@ -202,7 +203,7 @@ const ProfileActions = () : React.JSX.Element => {
   }), []);
   return (
     <View style={[container]}>
-      <TouchableOpacity style={actionButton}>
+      <TouchableOpacity style={actionButton} onPress={onPressEditProfile}>
         <Text style={actionText}>Chỉnh sửa trang cá nhân</Text>
       </TouchableOpacity>
       <TouchableOpacity style={actionButton}>
@@ -213,12 +214,43 @@ const ProfileActions = () : React.JSX.Element => {
 };
 
 const ProfilePostArchived = () : React.JSX.Element => {
-  return (
-    <View>
+  type ProfilePostArchivedStyle = {
+    container: ViewStyle,
+    title_wrapper: ViewStyle,
+    title_text: TextStyle,
+    title_icon: TextStyle,
+  };
+  const style = useMemo<ProfilePostArchivedStyle>(() => ({
+    container: {
 
+    },
+    title_wrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    title_text: {
+      color: 'white',
+      fontSize: 20,
+      fontWeight: 'bold',
+    },
+    title_icon: {
+      color: 'white',
+      fontSize: 20,
+    },
+  }), []);
+  return (
+    <View style={[style.container]}>
+      <View style={[style.title_wrapper]}>
+        <IconEntypo name="folder-video" style={[style.title_icon]}/>
+        <Text style={[style.title_text]}>Bài viết đã lưu</Text>
+      </View>
+      <FlatList horizontal={true} data={data} renderItem={({item : post}) => {
+        return <PostCard post={post}/>;
+      }}/>
     </View>
-  )
-}
+  );
+};
 
 
 const PostCard = ({post} : {post : Post}) : React.JSX.Element => {
@@ -324,23 +356,27 @@ const ProfilePostedPost = () : React.JSX.Element => {
         <IconEntypo name="folder-video" style={[style.title_icon]}/>
         <Text style={[style.title_text]}>Bài viết đã đăng tải</Text>
       </View>
-      <FlatList data={data} renderItem={({item : post}) => {
+      <FlatList horizontal={true} data={data} renderItem={({item : post}) => {
         return <PostCard post={post}/>;
       }}/>
     </View>
   );
 };
 
-export default function ProfileScreen():React.ReactElement {
+export default function ProfileScreen() : React.ReactElement {
+  const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={styles.container}>
-      <ProfileHeader/>
-      <ProfileInfo/>
-      <ProfileActions/>
-      <ProfileBody>
-        <ProfilePostArchived/>
-        <ProfilePostedPost/>
-      </ProfileBody>
+      <ScrollView>
+        <ProfileHeader/>
+        <ProfileInfo/>
+        <ProfileActions onPressEditProfile={() => navigation.navigate('Profile Settings Stack Screen')}/>
+        <ExploreFriends/>
+        <ProfileBody>
+          <ProfilePostArchived/>
+          <ProfilePostedPost/>
+        </ProfileBody>
+      </ScrollView>
     </SafeAreaView>
   );
 }
