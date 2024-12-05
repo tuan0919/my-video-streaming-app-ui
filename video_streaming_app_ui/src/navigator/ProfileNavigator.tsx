@@ -8,8 +8,10 @@ export default function ProfileNavigator(): React.JSX.Element {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-      }}>
-      <Stack.Screen name="Profile" component={ProfileScreen} />
+      }}
+      initialRouteName="Profile Stack Screen"
+      >
+      <Stack.Screen name="Profile Stack Screen" component={ProfileScreen} />
     </Stack.Navigator>
   );
 }
