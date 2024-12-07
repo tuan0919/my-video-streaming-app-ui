@@ -88,7 +88,9 @@ export default function TabNavigator () : React.JSX.Element {
       <Tab.Screen name="Search Navigator" component={SearchNavigator} />
       <Tab.Screen name="Reel Navigator" component={ReelNavigator} />
       <Tab.Screen name="Gallery Navigator" component={GalleryNavigator} />
-      <Tab.Screen name="Profile Navigator" component={ProfileNavigator} />
+      <Tab.Screen options={{
+        unmountOnBlur: true,
+      }} name="Profile Navigator" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 }
