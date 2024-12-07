@@ -32,10 +32,7 @@ const HeaderNavigation = () : React.JSX.Element => {
         icon_wrapper: {
             position: 'absolute',
             left: 5,
-            top: '50%',
-            transform: [
-                {translateY: '-25%'},
-            ],
+            top: 5,
         },
         icon: {
             fontSize: 35,
@@ -46,7 +43,7 @@ const HeaderNavigation = () : React.JSX.Element => {
     return (
         <View style={[style.container]}>
             <Text style={[style.title]}>Chỉnh sửa trang cá nhân</Text>
-            <TouchableOpacity style={[style.icon_wrapper]} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={[style.icon_wrapper]} onPress={() => navigation.navigate('Profile Navigator')}>
                 <IconMaterialIcons name="keyboard-backspace" style={[style.icon]}/>
             </TouchableOpacity>
         </View>
