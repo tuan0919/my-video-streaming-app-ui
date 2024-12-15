@@ -45,11 +45,12 @@ const buttonWrapper : ViewStyle = {
 };
 
 const ProfileHeader = () : React.JSX.Element => {
+  const navigation = useNavigation<any>();
   return (
     <View style={[profileStyle]}>
       <Text style={[usernameText]}>nqat0919</Text>
       <View style={[buttonWrapper]}>
-        <TouchableOpacity style={{position: 'relative'}}>
+        <TouchableOpacity style={{position: 'relative'}} onPress={() => navigation.navigate('Notification Stack Screen')}>
           <IconIonicons size={30} color={'white'} name="notifications-outline"/>
           <View style={[unreadBadget]}>
             <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white'}}>9+</Text>
@@ -138,7 +139,7 @@ const ProfileInfo = () : React.JSX.Element => {
 
   const descriptionStyle = useMemo<ProfileDescriptionStyle>(() => ({
     descriptionText: {
-      color: 'white'
+      color: 'white',
     },
     wrapper: {
       maxWidth: '80%',

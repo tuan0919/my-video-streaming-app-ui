@@ -5,6 +5,7 @@ import SearchScreen from './SearchScreen.tsx';
 import GalleryScreen from './GalleryScreen.tsx';
 import PostDetailsScreen from './PostDetailsScreen.tsx';
 import ProfileSettingsScreen from './ProfileSettingsScreen.tsx';
+import NotificationScreen from './NotificationScreen.tsx';
 export {
   HomeScreen,
   ProfileScreen,
@@ -13,4 +14,5 @@ export {
   GalleryScreen,
   PostDetailsScreen,
   ProfileSettingsScreen,
+  NotificationScreen,
 };

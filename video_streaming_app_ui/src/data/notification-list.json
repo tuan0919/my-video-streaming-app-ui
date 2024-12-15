@@ -1,0 +1,42 @@
+[
+    {
+        "username": "johndoe123",
+        "avatar": "https://randomuser.me/api/portraits/men/1.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "janesmith456",
+        "avatar": "https://randomuser.me/api/portraits/women/2.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "charlie_brown",
+        "avatar": "https://randomuser.me/api/portraits/men/3.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "emily_jones789",
+        "avatar": "https://randomuser.me/api/portraits/women/4.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "michael_scott",
+        "avatar": "https://randomuser.me/api/portraits/men/5.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "sarah_connor",
+        "avatar": "https://randomuser.me/api/portraits/women/6.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "david_lee",
+        "avatar": "https://randomuser.me/api/portraits/men/7.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      },
+      {
+        "username": "linda_parker",
+        "avatar": "https://randomuser.me/api/portraits/women/8.jpg",
+        "thumbnail": "https://random.imagecdn.app/500/800"
+      }
+]
