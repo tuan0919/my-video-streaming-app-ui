@@ -135,7 +135,6 @@ function NewFeed() : React.JSX.Element {
     await wait(2000);
     setData(currentData => [...currentData, posts[currentPage]]);
     setLoading(() => false);
-    // console.log(`loaded post ${posts[currentPage].owner.username}, index: ${currentPage}`);
   }, []);
 
   useEffect(() => {

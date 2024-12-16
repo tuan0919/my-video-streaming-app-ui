@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {Dimensions, StatusBar, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
@@ -14,6 +14,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import { FlatList } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Video from 'react-native-video';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 
 interface PostData {
   owner: {
@@ -240,6 +241,30 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
 }
 
 export default function PostDetailsScreen() : React.JSX.Element {
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(0);
+
+  const fetchPost = useCallback(async (currentPage: number) => {
+    setHasMore(() => currentPage < postData.length);
+    setIsLoading(() => true);
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(2000);
+    setPosts(currentData => [...currentData, postData[currentPage]]);
+    setIsLoading(() => false);
+  }, []);
+
+  useEffect(() => {
+    fetchPost(page);
+  }, [page, fetchPost]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      setPage(prevPage => prevPage + 1); // Tăng số trang
+    }
+  }, [isLoading, hasMore]);
+
   const [playingVideo, setPlayingVideo] = useState<string>(postData[0].owner.username);
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { item: PostData }[] }) => {
@@ -256,18 +281,30 @@ export default function PostDetailsScreen() : React.JSX.Element {
     {viewabilityConfig: {viewAreaCoveragePercentThreshold: 50}, onViewableItemsChanged },
   ]);
   const commentSheetRef = useRef<CommentSheet>(null);
+  const LoadingScreen = useMemo(() => {
+    return (
+      <View style={{backgroundColor: 'black', height: '100%', justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size={20} animating={true} color={MD2Colors.green700} />
+          <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+        </View>
+      </View>
+    );
+  }, []);
   return (
     <SafeAreaView style={{flex: 1}}>
       <FlatList
       style={{backgroundColor: 'gray' }}
       contentContainerStyle={{flexGrow: 1}}
-      horizontal={false} // Cuộn dọc
+      horizontal={false}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={true}
-      data={postData}
+      data={posts}
       windowSize={3}
       initialNumToRender={3}
+      onEndReached={handleLoadMore}
       pagingEnabled
+      ListFooterComponent={LoadingScreen}
       renderItem={({item}) => {
         return (
           <PostDetails
