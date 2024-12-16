@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import post_data from '../../data/user-posts.json';
 import user from '../../data/logged-in-user.json';
@@ -6,6 +6,7 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 
 interface PostData {
   owner: {
@@ -71,7 +72,7 @@ function CommentSection({currentUser : curUser} : {currentUser: User}) : React.J
                  selectionColor={'green'}
       />
     </View>
-  )
+  );
 }
 
 function PostBody({data} : {data: PostData}) : React.JSX.Element {
@@ -122,11 +123,51 @@ function Post({data} : {data: PostData}) : React.JSX.Element {
 }
 
 function NewFeed() : React.JSX.Element {
+  const [data, setData] = useState<PostData[]>([]);
+  const [page, setPage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const fetchPost = useCallback(async (currentPage: number) => {
+    setHasMore(() => currentPage < posts.length);
+    setLoading(() => true);
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(2000);
+    setData(currentData => [...currentData, posts[currentPage]]);
+    setLoading(() => false);
+    // console.log(`loaded post ${posts[currentPage].owner.username}, index: ${currentPage}`);
+  }, []);
+
+  useEffect(() => {
+    fetchPost(page);
+  }, [page, fetchPost]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loading && hasMore) {
+      setPage(prevPage => prevPage + 1); // Tăng số trang
+    }
+  }, [loading, hasMore]);
+
+
+  const LoadingFooter = useMemo(() => {
+    return (
+      <View style={{height: 170, backgroundColor: 'black', alignItems: 'flex-start', flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator animating={true} color={MD2Colors.green700} />
+          <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+        </View>
+      </View>
+    );
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={posts}
+        data={data}
+        keyExtractor={(item) => `${item.owner.username}`}
         renderItem={({item}) => <Post data={item}/>}
+        onEndReached={handleLoadMore}
+        ListFooterComponent={LoadingFooter}
+        onEndReachedThreshold={1}
       />
     </SafeAreaView>
   );

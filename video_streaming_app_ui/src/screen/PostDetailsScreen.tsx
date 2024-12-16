@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {Dimensions, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {Dimensions, StatusBar, StyleSheet, Text, TextStyle, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import MaterialIconsIcon from 'react-native-vector-icons/MaterialIcons';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FontistoIcon from 'react-native-vector-icons/Fontisto';
@@ -12,7 +12,7 @@ import commentsData from '../data/comments.json';
 import { CommentSheet } from '../component/comment/CommentBottomSheet';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { FlatList } from 'react-native-gesture-handler';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Video from 'react-native-video';
 
 interface PostData {
@@ -27,6 +27,7 @@ interface PostData {
     comments: number;
     time: string;
     description: string;
+    video: string,
   };
 }
 
@@ -182,14 +183,10 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
 }
 
 function PostDetails({postData : data, play, onLoadComment} : {postData: PostData, play: boolean, onLoadComment : () => void}) {
-  const { height } = Dimensions.get('window');
+  const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const [isFocus, setIsFocus] = useState<boolean>(false);
-  const insets = useSafeAreaInsets();
-  useEffect(() => {
-    console.log('Safe Area Insets:', insets);
-  }, [insets]);
   return (
-    <View style={{height: height - 44 - 21}}>
+    <View style={{height: screenHeight}}>
       <View style={[styles.postBody]}>
           <View
             style={{
@@ -211,9 +208,8 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
               flex: 1,
             }}
             resizeMode="cover"
-          /> : <Video source={{uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'}}
+          /> : <Video source={{uri: data.post.video}}
           resizeMode="cover"
-          paused={true}
           repeat
           style={{
             width: '100%',
@@ -244,11 +240,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
 }
 
 export default function PostDetailsScreen() : React.JSX.Element {
-  const insets = useSafeAreaInsets();
   const [playingVideo, setPlayingVideo] = useState<string>(postData[0].owner.username);
-  useEffect(() => {
-    console.log('Safe Area Insets:', insets);
-  }, [insets]);
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { item: PostData }[] }) => {
       console.log(
@@ -265,18 +257,26 @@ export default function PostDetailsScreen() : React.JSX.Element {
   ]);
   const commentSheetRef = useRef<CommentSheet>(null);
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
       <FlatList
-      style={{ flexGrow: 1, backgroundColor: 'gray' }}
-      contentContainerStyle={{ backgroundColor: 'blue'}}
+      style={{backgroundColor: 'gray' }}
+      contentContainerStyle={{flexGrow: 1}}
       horizontal={false} // Cuộn dọc
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={true}
       data={postData}
-      windowSize={5}
+      windowSize={3}
       initialNumToRender={3}
       pagingEnabled
-      renderItem={({item}) => <PostDetails play={item.owner.username === playingVideo} postData={item} onLoadComment={() => commentSheetRef.current?.open()}/>}
+      renderItem={({item}) => {
+        return (
+          <PostDetails
+          play={item.owner.username === playingVideo}
+          postData={item}
+          onLoadComment={() => commentSheetRef.current?.open()}
+          />
+        );
+      }}
       viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
       />
       <CommentBottomSheet

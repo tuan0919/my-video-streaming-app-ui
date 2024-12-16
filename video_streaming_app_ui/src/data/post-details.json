@@ -6,6 +6,7 @@
       "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
     },
     "post": {
+      "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
       "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
       "likes": 100,
       "comments": 24,
@@ -20,6 +21,7 @@
       "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
     },
     "post": {
+      "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
       "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
       "likes": 100,
       "comments": 11,
@@ -34,10 +36,41 @@
       "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
     },
     "post": {
+      "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
       "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
       "likes": 100,
       "comments": 69,
       "time": "2 hour ago",
+      "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+    }
+  },
+  {
+    "owner": {
+      "isFollowed": "true",
+      "username": "kiet_23blaT",
+      "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+    },
+    "post": {
+      "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
+      "likes": 100,
+      "comments": 69,
+      "time": "1 minutes ago",
+      "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
+    }
+  },
+  {
+    "owner": {
+      "isFollowed": "true",
+      "username": "21130601@st.hcm",
+      "avatar": "https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg"
+    },
+    "post": {
+      "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "thumbnail": "https://i.pinimg.com/originals/07/ce/bd/07cebdaa7fa12c68715e574ef7bbd1b3.jpg",
+      "likes": 11,
+      "comments": 24,
+      "time": "39 minutes ago",
       "description": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus, esse, nihil ipsa officiis inventore consectetur quasi assumenda mollitia voluptas nulla doloremque laborum numquam vel recusandae itaque. Fugit eos doloremque iste?"
     }
   }

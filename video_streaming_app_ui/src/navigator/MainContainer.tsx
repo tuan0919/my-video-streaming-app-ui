@@ -19,7 +19,9 @@ export default function MainContainer () : React.JSX.Element {
         headerShown: false,
       }}>
         <Stack.Screen name="Tab Navigator" component={TabNavigator} />
-        <Stack.Screen name="Post Details" component={PostDetailsScreen} />
+        <Stack.Screen name="Post Details"
+        options={{animation: 'slide_from_right'}}
+        component={PostDetailsScreen} />
         <Stack.Screen options={{animation: 'slide_from_bottom'}}
         name="Profile Settings Stack Screen" component={ProfileSettingsScreen} />
       </Stack.Navigator>
