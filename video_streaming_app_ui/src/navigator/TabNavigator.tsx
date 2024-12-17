@@ -10,6 +10,10 @@ import ProfileNavigator from './ProfileNavigator.tsx';
 import loginUser from '../data/logged-in-user.json';
 import ReelNavigator from './ReelNavigator.tsx';
 import GalleryNavigator from './GalleryNavigator.tsx';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { createThumbnail } from 'react-native-create-thumbnail';
+import { VESDK } from 'react-native-videoeditorsdk';
+import { useNavigation } from '@react-navigation/native';
 
 interface User {
   username: string;
@@ -62,8 +66,37 @@ function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
   }
 }
 
+const openVideoFromCameraRollExample = async (): Promise<string | undefined> => {
+  try {
+    // Select a video from the camera roll.
+    let pickerResult = await launchImageLibrary({
+      mediaType: 'video',
+    });
+
+    // Open the video editor and handle the export as well as any occuring errors.
+    const video = pickerResult.assets ? pickerResult.assets[0].uri : undefined;
+    const result = video ? await VESDK.openEditor(video) : null;
+
+    if (result != null) {
+      // The user exported a new video successfully and the newly generated video is located at `result.video`.
+      console.log(result?.video);
+      const thumbnail = await createThumbnail({
+        url: result.video,
+        timeStamp: 10000,
+      });
+      return thumbnail.path;
+    } else {
+      // The user tapped on the cancel button within the editor.
+      return undefined;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export default function TabNavigator () : React.JSX.Element {
   const Tab = createBottomTabNavigator();
+  const navigation = useNavigation<any>();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => {
@@ -86,7 +119,17 @@ export default function TabNavigator () : React.JSX.Element {
     }}>
       <Tab.Screen name="Home Navigator" component={HomeNavigator} />
       <Tab.Screen name="Search Navigator" component={SearchNavigator} />
-      <Tab.Screen name="Reel Navigator" component={ReelNavigator} />
+      <Tab.Screen name="Reel Navigator" component={ReelNavigator}
+        listeners={{
+          tabPress: async (e) => {
+            e.preventDefault();
+            const thumbnail = await openVideoFromCameraRollExample();
+            thumbnail && navigation.navigate('Reel Navigator', {
+              thumbnail: thumbnail,
+            });
+          },
+        }}
+      />
       <Tab.Screen name="Gallery Navigator" component={GalleryNavigator} />
       <Tab.Screen options={{
         unmountOnBlur: true,
