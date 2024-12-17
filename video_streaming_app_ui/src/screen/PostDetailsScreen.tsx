@@ -245,6 +245,8 @@ export default function PostDetailsScreen() : React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState<number>(0);
+  const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
+  const navigation = useNavigation<any>();
 
   const fetchPost = useCallback(async (currentPage: number) => {
     setHasMore(() => currentPage < postData.length);
@@ -283,14 +285,14 @@ export default function PostDetailsScreen() : React.JSX.Element {
   const commentSheetRef = useRef<CommentSheet>(null);
   const LoadingScreen = useMemo(() => {
     return (
-      <View style={{backgroundColor: 'black', height: '100%', justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{backgroundColor: 'black', height: screenHeight, justifyContent: 'center', alignItems: 'center'}}>
         <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
           <ActivityIndicator size={20} animating={true} color={MD2Colors.green700} />
           <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
         </View>
       </View>
     );
-  }, []);
+  }, [screenHeight]);
   return (
     <SafeAreaView style={{flex: 1}}>
       <FlatList
@@ -310,7 +312,7 @@ export default function PostDetailsScreen() : React.JSX.Element {
           <PostDetails
           play={item.owner.username === playingVideo}
           postData={item}
-          onLoadComment={() => commentSheetRef.current?.open()}
+          onLoadComment={() => navigation.navigate('Comment Stack Screen')}
           />
         );
       }}

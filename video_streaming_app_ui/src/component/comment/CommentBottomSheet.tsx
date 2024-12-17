@@ -1,8 +1,8 @@
-import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import BottomSheet, {
   BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
-import {FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {FlatList, Image, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, ViewStyle} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import LottieView from 'lottie-react-native';
@@ -89,6 +89,28 @@ interface CommentBottomSheetProps {
 const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({comments, style} , ref) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [data, setData] = useState<Comment[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(0);
+
+  const fetchComment = useCallback(async (loadPage : number) => {
+    setHasMore(() => loadPage < comments.length);
+    setIsLoading(() => true);
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(1000);
+    setData(currentData => [...currentData, comments[loadPage]]);
+    setIsLoading(() => false);
+  }, [comments]);
+
+  useEffect(() => {
+    fetchComment(page);
+  }, [page, fetchComment]);
+
+  const handleLoadMore = useCallback(() => {
+      if (!isLoading && hasMore) {
+        setPage(prevPage => prevPage + 1); // Tăng số trang
+      }
+  }, [isLoading, hasMore]);
 
 
   const renderItem = useCallback(({ item }: { item: Comment }) => {
@@ -117,6 +139,17 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
     },
   }));
 
+  const LoadingFooter = useMemo(() => {
+    return (
+      <View style={{backgroundColor: 'black', alignItems: 'center', justifyContent: 'center', flex: 1}}>
+        <LottieView style={{width: 50, height: 50}}
+                    source={require('../../assest/loading.json')}
+                    autoPlay loop
+        />
+      </View>
+    );
+  }, []);
+
   // renders
   return (
     isVisible && <BottomSheet
@@ -129,17 +162,11 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
     onClose={() => setIsVisible(false)}
     containerStyle={[style]}
     >
-    {isLoading ? (
-      <View style={{backgroundColor: 'black', alignItems: 'center', justifyContent: 'center', flex: 1}}>
-        <LottieView style={{width: 50, height: 50}}
-                    source={require('../../assest/loading.json')}
-                    autoPlay loop
-        />
-      </View>
-    ) : (
-    <>
       <BottomSheetFlatList
-      data={comments}
+      data={data}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={LoadingFooter}
       renderItem={renderItem}
       ItemSeparatorComponent={separator}
       contentContainerStyle={{
@@ -151,7 +178,7 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
       style={[styles.contentContainer]}
       initialNumToRender={0}
       />
-      <View style={{
+      <KeyboardAvoidingView style={{
         paddingHorizontal: 10,
         backgroundColor: 'black',
         flexDirection: 'row',
@@ -180,9 +207,7 @@ const CommentBottomSheet = forwardRef<CommentSheet, CommentBottomSheetProps>(({c
             fontSize: 24,
           }} />
         </TouchableOpacity>
-      </View>
-    </>
-  )}
+      </KeyboardAvoidingView>
     </BottomSheet>
   );
 });
