@@ -6,6 +6,7 @@ import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import commentJSON from '../data/comments.json';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FeatherIcon from 'react-native-vector-icons/Feather';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 
 interface UserProfile {
     username: string;
@@ -63,8 +64,7 @@ const HeaderNavigation = () : React.JSX.Element => {
     );
 };
 
-const Comment = React.memo(({ comment }: { comment: Comment }) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+const Comment = React.memo(({comment} : {comment: Comment}) => {
   type Comment_Style = {
     contentContainer?: ViewStyle,
     commentContainer?: ViewStyle,
@@ -104,6 +104,7 @@ const Comment = React.memo(({ comment }: { comment: Comment }) => {
   const renderItem = useCallback(({ item }: { item: Comment }) => {
     return <Comment comment={item} />;
   }, []);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   return (
     <View style={style.commentContainer}>
       <View style={style.avatarContainer}>
@@ -152,19 +153,46 @@ const Comment = React.memo(({ comment }: { comment: Comment }) => {
 });
 
 const CommentList = () : React.JSX.Element => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const fetchMoreComments = useCallback(async () => {
+    setIsLoading(() => true);
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(2000);
+    setComments(currentData => [...currentData, ...commentData]);
+    setIsLoading(() => false);
+  }, []);
+  const LoadingFooter = useMemo(() => {
+    return (
+      <View style={{height: 70, backgroundColor: 'black', alignItems: 'center', flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator animating={true} color={MD2Colors.green700} />
+          <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+        </View>
+      </View>
+    );
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    fetchMoreComments();
+  }, [fetchMoreComments]);
     const seperator = () => {
         return (
-            <View style={{height: 20}}/>      t5fv gt
+            <View style={{height: 20}}/>
         );
     };
     return (
         <View style={{flex: 1}}>
             <View style={{flex: 1}}>
                 <FlatList
-                data={commentData}
+                data={comments}
+                onEndReachedThreshold={1}
+                onEndReached={handleLoadMore}
                 contentContainerStyle={{paddingVertical: 10}}
                 renderItem={({item}) => <Comment comment={item}/>}
                 ItemSeparatorComponent={seperator}
+                ListFooterComponent={LoadingFooter}
                 />
             </View>
             <KeyboardAvoidingView style={{

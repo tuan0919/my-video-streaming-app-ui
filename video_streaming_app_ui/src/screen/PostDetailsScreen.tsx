@@ -7,14 +7,13 @@ import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import post from '../data/post-details.json';
 import {Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {CommentBottomSheet} from '../component';
 import commentsData from '../data/comments.json';
-import { CommentSheet } from '../component/comment/CommentBottomSheet';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { FlatList } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Video from 'react-native-video';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
+import { VideoRepository } from '../repository';
 
 interface PostData {
   owner: {
@@ -140,8 +139,6 @@ function PostHeader({data, onExpanded, onClosed, style}: PostHeaderProps) : Reac
     </View>
   );
 }
-
-
 interface PostContentProps {
   data: PostData,
   style: ViewStyle;
@@ -186,6 +183,19 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
 function PostDetails({postData : data, play, onLoadComment} : {postData: PostData, play: boolean, onLoadComment : () => void}) {
   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const videoRepository = useMemo(() => new VideoRepository(), []);
+  useEffect(() => {
+    videoRepository.getVideoDetails('6274169d-9aac-4b97-b12d-5c68101b7e03')
+      .then(response => console.log(response))
+      .catch(error => {
+        console.error(error);
+        console.log('Axios error message:', error.message);
+        console.log('Axios config:', error.config);
+        console.log('Axios code:', error.code);
+        console.log('Axios request:', error.request);
+        console.log('Axios response:', error.response);
+      });
+  }, [videoRepository]);
   return (
     <View style={{height: screenHeight}}>
       <View style={[styles.postBody]}>
@@ -282,7 +292,6 @@ export default function PostDetailsScreen() : React.JSX.Element {
   const viewabilityConfigCallbackPairs = useRef([
     {viewabilityConfig: {viewAreaCoveragePercentThreshold: 50}, onViewableItemsChanged },
   ]);
-  const commentSheetRef = useRef<CommentSheet>(null);
   const LoadingScreen = useMemo(() => {
     return (
       <View style={{backgroundColor: 'black', height: screenHeight, justifyContent: 'center', alignItems: 'center'}}>
@@ -317,14 +326,6 @@ export default function PostDetailsScreen() : React.JSX.Element {
         );
       }}
       viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
-      />
-      <CommentBottomSheet
-        style={{
-          zIndex: 4,
-          flex: 1,
-        }}
-        comments={comments}
-        ref={commentSheetRef}
       />
     </SafeAreaView>
   );
