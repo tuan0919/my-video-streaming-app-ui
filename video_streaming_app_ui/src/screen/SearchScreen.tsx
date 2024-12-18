@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
-
+import search_users from '../data/users.json';
 const SearchPost = () => {
   type SearchPost_Style = {
     image?: ImageStyle,
@@ -88,9 +88,67 @@ const SearchPostContent = () => {
     />
   );
 };
-const SearchUserContent = () => (
-  <View style={[styles.container, { backgroundColor: '#673ab7' }]} />
-);
+
+type UserAccount = {
+  username: string,
+  avatar: string
+}
+
+const UserAccount = ({user} : {user: UserAccount}) => {
+  return (
+    <TouchableOpacity style={{flexDirection: 'row', gap: 20, alignItems: 'center', width: '90%'}}>
+      <View style={[{borderWidth: 2, borderRadius: 50, borderColor: 'white', width: 60, height: 60, overflow: 'hidden'}]}>
+        <Image source={{uri: user.avatar}} style={[{width: '100%', height: '100%'}]}/>
+      </View>
+      <View style={[{maxWidth: '50%'}]}>
+        <Text style={[{fontWeight: 'bold', color: 'white'}]}>@{user.username}</Text>
+        <Text style={[{color: 'white'}]} numberOfLines={1}>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Culpa veritatis laboriosam obcaecati similique officiis rem quas possimus sint quisquam ab dicta blanditiis quo adipisci enim, numquam exercitationem deleniti? A, animi?</Text>
+        <Text style={[{color: '#777777'}]}>Có 123 người theo dõi</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const SearchUserContent = () => {
+  const [data, setData] = useState<UserAccount[]>(search_users);
+  const fetchMoreUsers = useCallback(async () => {
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(2000);
+    setData(currentData => [...currentData, ...search_users]);
+  }, []);
+  const {width} = Dimensions.get('window');
+  const LoadingFooter = useMemo(() => {
+    return (
+      <View style={{
+        paddingTop: 5,
+        paddingBottom: 60,
+        flexDirection: 'row',
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: width,
+      }}>
+        <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator animating={true} color={MD2Colors.green700} />
+          <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+        </View>
+      </View>
+    );
+  }, [width]);
+  return (
+    <FlatList
+    contentContainerStyle={{
+      gap: 20,
+      paddingHorizontal: 10,
+      paddingTop: 20,
+    }}
+    data={data}
+    renderItem={({item}) => <UserAccount user={item}/>}
+    ListFooterComponent={LoadingFooter}
+    onEndReached={fetchMoreUsers}
+    />
+  );
+};
 
 const renderScene = SceneMap({
   first: SearchPostContent,
