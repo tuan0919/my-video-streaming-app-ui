@@ -1,61 +1,9 @@
-import {Image, ImageStyle, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { VESDK } from 'react-native-videoeditorsdk';
-import {launchImageLibrary} from 'react-native-image-picker';
-import { createThumbnail } from 'react-native-create-thumbnail';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
-const openVideoFromLocalPathExample = async (): Promise<void> => {
-  try {
-    const videoPath = 'https://img.ly/static/example-assets/Skater.mp4';
-    // Open the video editor and handle the export as well as any occuring errors.
-    const result = await VESDK.openEditor(videoPath);
-
-    if (result != null) {
-      // The user exported a new video successfully and the newly generated video is located at `result.video`.
-      console.log(result?.video);
-    } else {
-      // The user tapped on the cancel button within the editor.
-      return;
-    }
-  } catch (error) {
-    // There was an error generating the video.
-    console.log(error);
-  }
-};
-
-const openVideoFromCameraRollExample = async (navigation : any): Promise<string | undefined> => {
-  try {
-    // Select a video from the camera roll.
-    let pickerResult = await launchImageLibrary({
-      mediaType: 'video',
-    });
-
-    // Open the video editor and handle the export as well as any occuring errors.
-    const video = pickerResult.assets ? pickerResult.assets[0].uri : undefined;
-    if (!video) {
-      navigation.goBack();
-    }
-    const result = video ? await VESDK.openEditor(video) : null;
-
-    if (result != null) {
-      // The user exported a new video successfully and the newly generated video is located at `result.video`.
-      console.log(result?.video);
-      const thumbnail = await createThumbnail({
-        url: result.video,
-        timeStamp: 10000,
-      });
-      return thumbnail.path;
-    } else {
-      // The user tapped on the cancel button within the editor.
-      return undefined;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+import { TextInput as PaperTextInput } from 'react-native-paper';
+import { KeyboardAvoidingView } from 'react-native';
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
         container: ViewStyle,
@@ -98,7 +46,7 @@ const HeaderNavigation = () : React.JSX.Element => {
     );
 };
 
-export default function ReelScreen():React.ReactElement {
+export default function ReelScreen() : React.ReactElement {
   const navigation = useNavigation<any>();
   React.useLayoutEffect(() => {
     // Ẩn Bottom Tab trên màn hình này
@@ -136,12 +84,15 @@ export default function ReelScreen():React.ReactElement {
       borderRadius: 10,
     },
     input_wrapper: {
-      flexDirection: 'row',
-      justifyContent: 'center',
+      flexDirection: 'column',
+      alignItems: 'center',
     },
     input_text: {
       color: 'white',
       fontWeight: 'bold',
+      borderBottomColor: 'green',
+      borderBottomWidth: 1,
+      width: '80%',
     },
   }), []);
   const route = useRoute<any>();
@@ -153,20 +104,55 @@ export default function ReelScreen():React.ReactElement {
     }
   }, [param]);
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container]}>
       { thumbnail &&
       <>
         <HeaderNavigation/>
-        <View style={[style.thumbnail_wrapper]}>
-          <Image source={{uri: thumbnail}} style={[style.thumbnail]}/>
-        </View>
-        <View style={[style.input_wrapper]}>
-          <KeyboardAvoidingView>
-              <TextInput style={[style.input_text]}
-              textAlign="center"
-              placeholder="Nhập tiêu đề video"
-              placeholderTextColor={'white'} />
+        <ScrollView
+        style={[{flex: 1}]}>
+          <View style={[style.thumbnail_wrapper]}>
+            <Image source={{uri: thumbnail}} style={[style.thumbnail]}/>
+          </View>
+          <KeyboardAvoidingView
+            style={[{gap: 20, paddingTop: 10, flex: 1}]}
+          >
+            <View
+            style={{flexDirection: 'row', justifyContent: 'center'}}>
+                  <TextInput style={[style.input_text]}
+                  textAlign="center"
+                  placeholder="Nhập tiêu đề video"
+                  placeholderTextColor={'white'} />
+            </View>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'center'}}>
+                <PaperTextInput
+                style={[{backgroundColor: 'rgba(0,0,0,1)', width: '80%'}]}
+                multiline={true}
+                mode="outlined"
+                activeOutlineColor="green"
+                outlineColor="green"
+                textColor="white"
+                placeholderTextColor={'white'}
+                label={<Text style={{color: 'white', fontWeight: 'bold'}}>Mô tả video</Text>}
+              />
+            </View>
           </KeyboardAvoidingView>
+        </ScrollView>
+        <View style={{width: '100%', flexDirection: 'row', justifyContent: 'center'}}>
+          <TouchableOpacity
+          style={[{
+              width: '80%',
+              backgroundColor: '#73EC8B',
+              paddingVertical: 10,
+              alignItems: 'center',
+              borderRadius: 10,
+              borderWidth: 2,
+              borderColor: 'green',
+              marginVertical: 20,
+            }]}
+          >
+            <Text style={{fontWeight: 'bold', color: 'black'}}>Chia sẻ video</Text>
+          </TouchableOpacity>
         </View>
       </>
       }
