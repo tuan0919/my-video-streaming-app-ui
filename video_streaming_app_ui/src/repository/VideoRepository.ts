@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ApiResponse } from '../model';
+import { HOST, TOKEN } from '../data/enviroment';
 
 interface VideoDetails {
     ownerProfile: {
@@ -20,13 +21,53 @@ interface VideoDetails {
         createTime: string;
     },
     isFollowed: boolean,
-} 
+}
+
+interface SignedURLResponse {
+    link: string,
+}
+
+interface PutFileRequest {
+    filename: string,
+}
+
+interface UploadVideoResponse {
+    videoId: string,
+    description: string,
+    videoName: string,
+    videoURL: string,
+    createAt: string,
+}
+
+interface UploadVideoRequest {
+    videoKey: string,
+    thumbnailKey: string,
+    description: string,
+    videoName: string
+}
 
 export default class VideoRepository {
-    private AGGREGATOR_URL = 'http://192.168.1.21:8989/api/v1/aggregator';
-    private CONST_TOKEN = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJucWF0MDkxOSIsInNjb3BlIjoiUk9MRV9VU0VSIiwiaXNzIjoiaWRlbnRpdHktc2VydmljZSIsImlkIjoiYThkNTg5MDYtMjg4My00OTU2LTliZWMtZTY1MDg3ZGYyOTBkIiwiZXhwIjoxNzM0NDQ0MDEwLCJpYXQiOjE3MzQ0NDA0MTAsImp0aSI6IjRjYmZhM2E0LTFkZWEtNGE2MS1hODEwLWIzNmFmOGZlOTU5OSJ9.E4GjUErMNGweUeO7qkegOt9nUFMCa-YX0GKaIe50XZ7prG0TCC7Zv6eItlqh56AatZh6p6l0Rg-EQc7dnGM8fg';
+    private AGGREGATOR_URL = `http://${HOST}:8989/api/v1/aggregator`;
+    private VIDEO_SERVICE = `http://${HOST}:8989/api/v1/video-streaming`;
+    private CONST_TOKEN = TOKEN;
     getVideoDetails = async (videoId: string): Promise<ApiResponse<VideoDetails>> => {
         const response = await axios.get<ApiResponse<VideoDetails>>(`${this.AGGREGATOR_URL}/query/video/${videoId}`, {
+            headers: {
+                Authorization: `Bearer ${this.CONST_TOKEN}`,
+            },
+        });
+        return response.data;
+    };
+    putFileRequest = async (data : PutFileRequest): Promise<ApiResponse<SignedURLResponse>> => {
+        const response = await axios.put<ApiResponse<SignedURLResponse>>(`${this.VIDEO_SERVICE}/videos/upload`, data, {
+            headers: {
+                Authorization: `Bearer ${this.CONST_TOKEN}`,
+            },
+        });
+        return response.data;
+    };
+    uploadVideoRequest = async (data : UploadVideoRequest) : Promise<ApiResponse<UploadVideoResponse>> => {
+        const response = await axios.post<ApiResponse<UploadVideoResponse>>(`${this.VIDEO_SERVICE}/videos`, data, {
             headers: {
                 Authorization: `Bearer ${this.CONST_TOKEN}`,
             },

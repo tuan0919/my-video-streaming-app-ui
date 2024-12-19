@@ -9,6 +9,14 @@
     "start": "react-native start",
     "test": "jest"
   },
+  "codegenConfig": {
+    "name": "NativeUploader",
+    "type": "modules",
+    "jsSrcsDir": "specs",
+    "android": {
+      "javaPackageName": "com.module"
+    }
+  },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.0.5",
     "@react-navigation/bottom-tabs": "^6.6.1",

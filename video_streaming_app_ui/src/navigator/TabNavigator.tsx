@@ -14,6 +14,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { createThumbnail } from 'react-native-create-thumbnail';
 import { VESDK } from 'react-native-videoeditorsdk';
 import { useNavigation } from '@react-navigation/native';
+import ReelScreen from '../screen/ReelScreen.tsx';
 
 interface User {
   username: string;
@@ -27,7 +28,7 @@ interface RenderTabProps {
   routeName: RouteName;
 }
 
-type RouteName = 'Home Navigator' | 'Search Navigator' | 'Profile Navigator' | 'Reel Navigator' | 'Gallery Navigator';
+type RouteName = 'Home Navigator' | 'Search Navigator' | 'Profile Navigator' | 'Reel Screen' | 'Gallery Navigator';
 
 function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
   const color: ColorValue = focused ? 'white' : '#323232FF';
@@ -36,7 +37,7 @@ function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
       return <FoundationIcon name="home" style={styles.tabIcon} color={color} />;
     case 'Search Navigator':
       return <IoniconsIcon name="search" style={styles.tabIcon} color={color} />;
-    case 'Reel Navigator':
+    case 'Reel Screen':
       return (
         <View style={styles.mainButton}>
           <Image source={require('../assest/circle.png')} style={{
@@ -66,7 +67,7 @@ function getTabIcon({ focused, routeName }: RenderTabProps): React.JSX.Element {
   }
 }
 
-const openVideoFromCameraRollExample = async (): Promise<string | undefined> => {
+const chooseVideoFromUserDevice = async (): Promise<string | undefined> => {
   try {
     // Select a video from the camera roll.
     let pickerResult = await launchImageLibrary({
@@ -79,12 +80,7 @@ const openVideoFromCameraRollExample = async (): Promise<string | undefined> => 
 
     if (result != null) {
       // The user exported a new video successfully and the newly generated video is located at `result.video`.
-      console.log(result?.video);
-      const thumbnail = await createThumbnail({
-        url: result.video,
-        timeStamp: 10000,
-      });
-      return thumbnail.path;
+      return result.video;
     } else {
       // The user tapped on the cancel button within the editor.
       return undefined;
@@ -119,14 +115,22 @@ export default function TabNavigator () : React.JSX.Element {
     }}>
       <Tab.Screen name="Home Navigator" component={HomeNavigator} />
       <Tab.Screen name="Search Navigator" component={SearchNavigator} />
-      <Tab.Screen name="Reel Navigator" component={ReelNavigator}
+      <Tab.Screen name="Reel Screen" component={ReelScreen}
         listeners={{
           tabPress: async (e) => {
             e.preventDefault();
-            const thumbnail = await openVideoFromCameraRollExample();
-            thumbnail && navigation.navigate('Reel Navigator', {
-              thumbnail: thumbnail,
-            });
+            const videoPath = await chooseVideoFromUserDevice();
+            console.log('video path from user device: ', videoPath);
+            if (videoPath) {
+              const {path : thumbnailPath} = await createThumbnail({
+                url: videoPath,
+                timeStamp: 10000,
+              });
+              thumbnailPath && navigation.navigate('Reel Screen', {
+                thumbnailPath: thumbnailPath,
+                videoPath: videoPath,
+              });
+            }
           },
         }}
       />

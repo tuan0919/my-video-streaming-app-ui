@@ -1,9 +1,12 @@
-import {Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import {DeviceEventEmitter, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { TextInput as PaperTextInput } from 'react-native-paper';
+import { ActivityIndicator, MD2Colors, TextInput as PaperTextInput } from 'react-native-paper';
 import { KeyboardAvoidingView } from 'react-native';
+import { VideoRepository } from '../repository';
+import axios from 'axios';
+import NativeUploader from '../../specs/NativeUploader';
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
         container: ViewStyle,
@@ -65,7 +68,6 @@ export default function ReelScreen() : React.ReactElement {
       });
     };
   }, [navigation]);
-
   type ReelScreen_Style = {
     thumbnail_wrapper?: ViewStyle,
     thumbnail?: ImageStyle,
@@ -96,13 +98,63 @@ export default function ReelScreen() : React.ReactElement {
     },
   }), []);
   const route = useRoute<any>();
-  const { thumbnail : param } = route.params || {};
+  const { thumbnailPath, videoPath } = route.params || {};
   const [thumbnail, setThumbnail] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    if (param) {
-      setThumbnail(param);
+  const [video, setVideo] = useState<string | undefined>(undefined);
+  const [videoKey, setVideoKey] = useState<string | undefined>(undefined);
+  const [thumbnailKey, setThumbnailKey] = useState<string | undefined>(undefined);
+  const [description, setDescription] = useState<string | undefined>(undefined);
+  const [videoName, setVideoName] = useState<string | undefined>(undefined);
+  const [uploading, setUploading] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const videoRepository = useMemo(() => new VideoRepository(), []);
+
+  const handleUpload = useCallback(async () => {
+    if (description && videoName) {
+      try {
+        setUploading(true);
+        const {result : {link : thumbnail_upload_link}} = await videoRepository.putFileRequest({
+          filename: 'thumbnail.jpeg',
+        });
+        const {result : {link : video_upload_link}} = await videoRepository.putFileRequest({
+          filename: 'video.mp4',
+        });
+        await Promise.all([
+          NativeUploader.uploadFile(thumbnail_upload_link, thumbnailPath, 'image/jpeg'),
+          NativeUploader.uploadFile(video_upload_link, videoPath, 'video/mp4'),
+        ]);
+        console.log('upload lên temp thành công');
+        setUploading(false);
+        await videoRepository.uploadVideoRequest({
+          description: description,
+          videoName: videoName,
+          videoKey: 'video.mp4',
+          thumbnailKey: 'thumbnail.jpeg',
+        });
+        setIsCompleted(true);
+        console.log('Upload video mới thành công!');
+      } catch (error: any) {
+        if (error.response) {
+          console.log('Lỗi từ server:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data,
+          });
+        } else if (error.request) {
+          console.log('Không nhận được phản hồi:', error.request);
+        } else {
+          console.log('Lỗi trong quá trình setup:', error.message);
+        }
+        console.log('Chi tiết lỗi:', error);
+      }
     }
-  }, [param]);
+  }, [description, thumbnailPath, videoName, videoPath, videoRepository]);
+  useEffect(() => {
+    setThumbnail(thumbnailPath);
+    setVideo(videoPath);
+    console.log('thumbnail path: ', thumbnailPath);
+    console.log('video path: ', videoPath);
+  }, [thumbnailPath, videoPath]);
   return (
     <SafeAreaView style={[styles.container]}>
       { thumbnail &&
@@ -120,8 +172,11 @@ export default function ReelScreen() : React.ReactElement {
             style={{flexDirection: 'row', justifyContent: 'center'}}>
                   <TextInput style={[style.input_text]}
                   textAlign="center"
+                  value={videoName}
                   placeholder="Nhập tiêu đề video"
-                  placeholderTextColor={'white'} />
+                  placeholderTextColor={'white'}
+                  onChangeText={setVideoName}
+                  />
             </View>
             <View
               style={{flexDirection: 'row', justifyContent: 'center'}}>
@@ -132,24 +187,41 @@ export default function ReelScreen() : React.ReactElement {
                 activeOutlineColor="green"
                 outlineColor="green"
                 textColor="white"
+                value={description}
+                onChangeText={setDescription}
                 placeholderTextColor={'white'}
                 label={<Text style={{color: 'white', fontWeight: 'bold'}}>Mô tả video</Text>}
               />
             </View>
           </KeyboardAvoidingView>
+          {
+            uploading && !isCompleted &&
+            <View style={{width: '100%', height: 50, backgroundColor: 'black', flexDirection: 'row', justifyContent: 'center'}}>
+              <ActivityIndicator animating={true} color={MD2Colors.green700} />
+              <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+            </View>
+          }
+          {
+            isCompleted &&
+            <View style={{width: '100%', height: 50, backgroundColor: 'black', flexDirection: 'row', justifyContent: 'center'}}>
+              <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Upload video thành công!</Text>
+            </View>
+          }
         </ScrollView>
         <View style={{width: '100%', flexDirection: 'row', justifyContent: 'center'}}>
           <TouchableOpacity
           style={[{
               width: '80%',
-              backgroundColor: '#73EC8B',
+              backgroundColor: uploading || isCompleted ? '#aaaaaa' : '#73EC8B',
               paddingVertical: 10,
               alignItems: 'center',
               borderRadius: 10,
               borderWidth: 2,
-              borderColor: 'green',
+              borderColor: uploading || isCompleted ? 'gray' : 'green',
               marginVertical: 20,
             }]}
+            disabled={uploading || isCompleted}
+            onPress={handleUpload}
           >
             <Text style={{fontWeight: 'bold', color: 'black'}}>Chia sẻ video</Text>
           </TouchableOpacity>
