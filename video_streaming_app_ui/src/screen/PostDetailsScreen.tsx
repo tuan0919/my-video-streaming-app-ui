@@ -237,9 +237,28 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
 //   );
 // }
 
-function PostDetails({postData : data, play, onLoadComment} : {postData: VideoDetails, play: boolean, onLoadComment : () => void}) {
+const PostDetails = React.memo(({ postData : data, play, onLoadComment }: { postData: VideoDetails; play: boolean; onLoadComment: () => void }) => {
   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const renderMedia = useCallback(() => {
+    if (play) {
+      return (
+        <Video
+          source={{ uri: data.stat.link }}
+          resizeMode="cover"
+          repeat
+          style={{ width: '100%', flex: 1 }}
+        />
+      );
+    }
+    return (
+      <Image
+        source={{ uri: data.stat.thumbnail }}
+        style={{ width: '100%', flex: 1 }}
+        resizeMode="cover"
+      />
+    );
+  }, [play, data.stat.link, data.stat.thumbnail]);
   return (
     <View style={{height: screenHeight}}>
       <View style={[styles.postBody]}>
@@ -253,24 +272,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: VideoDe
               pointerEvents: 'none',
             }}
           />
-          {!play ? <Image
-            source={{
-              uri: data.stat.thumbnail,
-            }}
-            style={{
-              width: '100%',
-              height: undefined,
-              flex: 1,
-            }}
-            resizeMode="cover"
-          /> : <Video source={{uri: data.stat.link}}
-          resizeMode="cover"
-          repeat
-          style={{
-            width: '100%',
-            flex: 1,
-          }}
-          />}
+          {renderMedia()}
           <NavigationBar data={postData[0]} style={{ zIndex: 2 }} />
           <PostHeader
             data={postData[0]}
@@ -292,10 +294,13 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: VideoDe
       </View>
     </View>
   );
-}
+});
 
 export default function PostDetailsScreen() : React.JSX.Element {
   // const [posts, setPosts] = useState<PostData[]>([]);
+  const route = useRoute<any>();
+  const {videoId} = route.params;
+  const [playingVideo, setPlayingVideo] = useState<string | undefined>(videoId);
   const [posts, setPosts] = useState<VideoDetails[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -303,8 +308,6 @@ export default function PostDetailsScreen() : React.JSX.Element {
   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const navigation = useNavigation<any>();
   const videoRepository = useMemo(() => new VideoRepository(), []);
-  const route = useRoute<any>();
-  const {videoId} = route;
 
   const fetchPost = useCallback(async (currentPage: number, currentVideoId: string) => {
     setIsLoading(() => true);
@@ -312,25 +315,22 @@ export default function PostDetailsScreen() : React.JSX.Element {
     if (response.result.length === 0) {
       setHasMore(() => false);
     } else {
-      setPosts(currentData => [...currentData, ...response.result]);
+      setPosts((curr) => [...curr, ...response.result]);
       setHasMore(() => true);
     }
     setIsLoading(() => false);
   }, [videoRepository]);
 
   useEffect(() => {
-    fetchPost(page, videoId).then(() => {
-      setPlayingVideo(posts[0].stat.videoId);
-    });
-  }, [fetchPost, page, posts, videoId]);
+    console.log('current videoId: ', videoId);
+    fetchPost(page, videoId);
+  }, [fetchPost, page, videoId]);
 
   const handleLoadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
+    if (hasMore) {
       setPage(prevPage => prevPage + 1); // Tăng số trang
     }
-  }, [isLoading, hasMore]);
-
-  const [playingVideo, setPlayingVideo] = useState<string | undefined>(undefined);
+  }, [hasMore]);
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { item: VideoDetails }[] }) => {
       console.log(
@@ -363,10 +363,15 @@ export default function PostDetailsScreen() : React.JSX.Element {
       horizontal={false}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={true}
-      data={posts}
+      maxToRenderPerBatch={3}
       windowSize={3}
-      initialNumToRender={3}
-      onEndReached={handleLoadMore}
+      keyExtractor={(item) => item.stat.videoId.toString()}
+      data={posts}
+      viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+      onEndReached={() => {
+        console.log('onEndReached');
+        handleLoadMore();
+      }}
       pagingEnabled
       ListFooterComponent={LoadingScreen}
       renderItem={({item}) => {
@@ -378,7 +383,6 @@ export default function PostDetailsScreen() : React.JSX.Element {
           />
         );
       }}
-      viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
       />
     </SafeAreaView>
   );
