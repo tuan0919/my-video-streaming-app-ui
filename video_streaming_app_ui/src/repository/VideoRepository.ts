@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ApiResponse } from '../model';
 import { HOST, TOKEN } from '../data/enviroment';
 
-interface VideoDetails {
+export default interface VideoDetails {
     ownerProfile: {
         userId: string;
         username: string;
@@ -18,7 +18,7 @@ interface VideoDetails {
         downVote: number;
         upVote: number;
         progress: number;
-        action: string | null;
+        action: 'UP_VOTE' | 'DOWN_VOTE' | undefined;
         createTime: string;
     },
     isFollowed: boolean,
@@ -69,6 +69,22 @@ export default class VideoRepository {
     };
     uploadVideoRequest = async (data : UploadVideoRequest) : Promise<ApiResponse<UploadVideoResponse>> => {
         const response = await axios.post<ApiResponse<UploadVideoResponse>>(`${this.VIDEO_SERVICE}/videos`, data, {
+            headers: {
+                Authorization: `Bearer ${this.CONST_TOKEN}`,
+            },
+        });
+        return response.data;
+    };
+    fetchNewFeed = async ({page, pageSize} : {page: number, pageSize: number}) : Promise<ApiResponse<VideoDetails[]>> => {
+        const response = await axios.get<ApiResponse<VideoDetails[]>>(`${this.AGGREGATOR_URL}/query/video/new-feed?page=${page}&pageSize=${pageSize}`, {
+            headers: {
+                Authorization: `Bearer ${this.CONST_TOKEN}`,
+            },
+        });
+        return response.data;
+    };
+    fetchNewFeedExclude = async ({page, pageSize, videoId} : {page: number, pageSize: number, videoId: string}) : Promise<ApiResponse<VideoDetails[]>> => {
+        const response = await axios.get<ApiResponse<VideoDetails[]>>(`${this.AGGREGATOR_URL}/query/video/new-feed?page=${page}&pageSize=${pageSize}&exclude=${videoId}`, {
             headers: {
                 Authorization: `Bearer ${this.CONST_TOKEN}`,
             },

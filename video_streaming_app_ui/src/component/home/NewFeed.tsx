@@ -7,6 +7,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
+import { VideoDetails, VideoRepository } from '../../repository';
 
 interface PostData {
   owner: {
@@ -32,7 +33,8 @@ interface User {
 const posts: PostData[] = post_data;
 const currentUser : User = user;
 
-function SmallUserProfile({data} : {data: PostData}) {
+function SmallUserProfile() {
+  const data = posts[0];
   const [isFollowed, setIsFollowed] = useState<boolean>(data.owner.isFollowed);
   return (
     <View style={styles.profileWrapper}>
@@ -75,8 +77,39 @@ function CommentSection({currentUser : curUser} : {currentUser: User}) : React.J
   );
 }
 
-function PostBody({data} : {data: PostData}) : React.JSX.Element {
-  const [isLiked, setIsLiked] = useState<boolean>(data.post.isLiked);
+// function PostBody({data} : {data: PostData}) : React.JSX.Element {
+//   const [isLiked, setIsLiked] = useState<boolean>(data.post.isLiked);
+//   const [isBookMarked, setIsBookMarked] = useState<boolean>(false);
+//   return (
+//     <View style={styles.postBody}>
+//       <View style={styles.iconsContainer}>
+//         <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
+//           {isLiked ? (
+//             <AntDesignIcon name="heart" style={styles.icon} color="green" />
+//           ) : (
+//             <AntDesignIcon name="hearto" style={styles.icon} color="white" />
+//           )}
+//         </TouchableOpacity>
+//         <TouchableOpacity>
+//           <FontAwesome name="comment-o" style={styles.icon} color="white" />
+//         </TouchableOpacity>
+//         <TouchableOpacity
+//           onPress={() => setIsBookMarked(!isBookMarked)}
+//           style={{marginLeft: 'auto'}}>
+//           <FeatherIcon name="bookmark" style={{fontSize: 35}} color={isBookMarked ? 'green' : 'white'} />
+//         </TouchableOpacity>
+//       </View>
+//       <Text style={styles.likesCount}>{data.post.likes} likes</Text>
+//       <View style={{flexDirection: 'row'}}>
+//         <Text style={styles.postDescription}>{data.post.description}</Text>
+//       </View>
+//       <CommentSection currentUser={currentUser} />
+//     </View>
+//   );
+// }
+
+function PostBody({data} : {data: VideoDetails}) : React.JSX.Element {
+  const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isBookMarked, setIsBookMarked] = useState<boolean>(false);
   return (
     <View style={styles.postBody}>
@@ -97,45 +130,67 @@ function PostBody({data} : {data: PostData}) : React.JSX.Element {
           <FeatherIcon name="bookmark" style={{fontSize: 35}} color={isBookMarked ? 'green' : 'white'} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.likesCount}>{data.post.likes} likes</Text>
+      <Text style={styles.likesCount}>{data.stat.upVote} likes</Text>
       <View style={{flexDirection: 'row'}}>
-        <Text style={styles.postDescription}>{data.post.description}</Text>
+        <Text style={styles.postDescription}>{data.stat.description}</Text>
       </View>
       <CommentSection currentUser={currentUser} />
     </View>
   );
 }
 
-function Post({data} : {data: PostData}) : React.JSX.Element {
+// function Post({data} : {data: PostData}) : React.JSX.Element {
+//   const navigation = useNavigation<any>();
+//   return (
+//     <View style={styles.postContainer}>
+//       <TouchableOpacity onPress={() => {
+//         navigation.navigate('Post Details');
+//       }}>
+//         <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.post.image}}/>
+//       </TouchableOpacity>
+//       <PostBody data={data}/>
+//       <SmallUserProfile data={data}/>
+
+//     </View>
+//   );
+// }
+
+function Post({data} : {data: VideoDetails}) : React.JSX.Element {
   const navigation = useNavigation<any>();
   return (
     <View style={styles.postContainer}>
       <TouchableOpacity onPress={() => {
-        navigation.navigate('Post Details');
+        navigation.navigate('Post Details', {
+          videoId: data.stat.videoId,
+        });
       }}>
-        <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.post.image}}/>
+        <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.stat.thumbnail}}/>
       </TouchableOpacity>
       <PostBody data={data}/>
-      <SmallUserProfile data={data}/>
-
+      <SmallUserProfile/>
     </View>
   );
 }
 
 function NewFeed() : React.JSX.Element {
-  const [data, setData] = useState<PostData[]>([]);
+  // const [data, setData] = useState<PostData[]>([]);
+  const [data, setData] = useState<VideoDetails[]>([]);
   const [page, setPage] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const videoRepository = useMemo<VideoRepository>(() => new VideoRepository(), []);
 
   const fetchPost = useCallback(async (currentPage: number) => {
-    setHasMore(() => currentPage < posts.length);
     setLoading(() => true);
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await wait(2000);
-    setData(currentData => [...currentData, posts[currentPage]]);
+    const response = await videoRepository.fetchNewFeed({page: currentPage, pageSize: 2});
+    if (response.result.length === 0) {
+      setHasMore(() => false);
+    } else {
+      setData(currentData => [...currentData, ...response.result]);
+      setHasMore(() => true);
+    }
     setLoading(() => false);
-  }, []);
+  }, [videoRepository]);
 
   useEffect(() => {
     fetchPost(page);
@@ -162,7 +217,7 @@ function NewFeed() : React.JSX.Element {
     <SafeAreaView style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={(item) => `${item.owner.username}`}
+        keyExtractor={(item) => `${item.ownerProfile.username}`}
         renderItem={({item}) => <Post data={item}/>}
         onEndReached={handleLoadMore}
         ListFooterComponent={LoadingFooter}

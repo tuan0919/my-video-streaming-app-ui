@@ -6,14 +6,14 @@ import FontistoIcon from 'react-native-vector-icons/Fontisto';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import post from '../data/post-details.json';
 import {Image} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import commentsData from '../data/comments.json';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { FlatList } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Video from 'react-native-video';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
-import { VideoRepository } from '../repository';
+import { VideoDetails, VideoRepository } from '../repository';
 
 interface PostData {
   owner: {
@@ -140,7 +140,7 @@ function PostHeader({data, onExpanded, onClosed, style}: PostHeaderProps) : Reac
   );
 }
 interface PostContentProps {
-  data: PostData,
+  data: VideoDetails,
   style: ViewStyle;
   onLoadComment: () => void
 }
@@ -166,11 +166,11 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
       <View style={styles.postActionList}>
         <TouchableOpacity style={[iconWrap]}>
           <AntDesignIcon name={'hearto'} style={iconStyle} />
-          <Text style={[textStyle]}>{data.post.likes}</Text>
+          <Text style={[textStyle]}>{data.stat.upVote}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[iconWrap]} onPress={onLoadComment}>
           <FontistoIcon name={'comment'} style={[iconStyle, {transform: [{ scaleX: -1 }]}]} />
-          <Text style={[textStyle]}>{data.post.comments}</Text>
+          <Text style={[textStyle]}>69</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[iconWrap]}>
           <IoniconsIcon name="bookmark-outline" style={[iconStyle, {fontSize: 30}]} />
@@ -180,22 +180,66 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
   );
 }
 
-function PostDetails({postData : data, play, onLoadComment} : {postData: PostData, play: boolean, onLoadComment : () => void}) {
+// function PostDetails({postData : data, play, onLoadComment} : {postData: PostData, play: boolean, onLoadComment : () => void}) {
+//   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
+//   const [isFocus, setIsFocus] = useState<boolean>(false);
+//   return (
+//     <View style={{height: screenHeight}}>
+//       <View style={[styles.postBody]}>
+//           <View
+//             style={{
+//               position: 'absolute',
+//               zIndex: 1,
+//               width: '100%',
+//               height: '100%',
+//               backgroundColor: isFocus ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,0)',
+//               pointerEvents: 'none',
+//             }}
+//           />
+//           {!play ? <Image
+//             source={{
+//               uri: data.post.thumbnail,
+//             }}
+//             style={{
+//               width: '100%',
+//               height: undefined,
+//               flex: 1,
+//             }}
+//             resizeMode="cover"
+//           /> : <Video source={{uri: data.post.video}}
+//           resizeMode="cover"
+//           repeat
+//           style={{
+//             width: '100%',
+//             flex: 1,
+//           }}
+//           />}
+//           <NavigationBar data={data} style={{ zIndex: 2 }} />
+//           <PostHeader
+//             data={data}
+//             onClosed={() => {
+//               console.log('closed');
+//               setIsFocus(false);
+//             }}
+//             onExpanded={() => {
+//               console.log('open');
+//               setIsFocus(true);
+//             }}
+//             style={{ zIndex: 2 }}
+//           />
+//           <PostContent
+//             data={data}
+//             style={{ zIndex: 2 }}
+//             onLoadComment={onLoadComment}
+//           />
+//       </View>
+//     </View>
+//   );
+// }
+
+function PostDetails({postData : data, play, onLoadComment} : {postData: VideoDetails, play: boolean, onLoadComment : () => void}) {
   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const [isFocus, setIsFocus] = useState<boolean>(false);
-  const videoRepository = useMemo(() => new VideoRepository(), []);
-  useEffect(() => {
-    videoRepository.getVideoDetails('6274169d-9aac-4b97-b12d-5c68101b7e03')
-      .then(response => console.log(response))
-      .catch(error => {
-        console.error(error);
-        console.log('Axios error message:', error.message);
-        console.log('Axios config:', error.config);
-        console.log('Axios code:', error.code);
-        console.log('Axios request:', error.request);
-        console.log('Axios response:', error.response);
-      });
-  }, [videoRepository]);
   return (
     <View style={{height: screenHeight}}>
       <View style={[styles.postBody]}>
@@ -211,7 +255,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
           />
           {!play ? <Image
             source={{
-              uri: data.post.thumbnail,
+              uri: data.stat.thumbnail,
             }}
             style={{
               width: '100%',
@@ -219,7 +263,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
               flex: 1,
             }}
             resizeMode="cover"
-          /> : <Video source={{uri: data.post.video}}
+          /> : <Video source={{uri: data.stat.link}}
           resizeMode="cover"
           repeat
           style={{
@@ -227,9 +271,9 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
             flex: 1,
           }}
           />}
-          <NavigationBar data={data} style={{ zIndex: 2 }} />
+          <NavigationBar data={postData[0]} style={{ zIndex: 2 }} />
           <PostHeader
-            data={data}
+            data={postData[0]}
             onClosed={() => {
               console.log('closed');
               setIsFocus(false);
@@ -251,25 +295,34 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
 }
 
 export default function PostDetailsScreen() : React.JSX.Element {
-  const [posts, setPosts] = useState<PostData[]>([]);
+  // const [posts, setPosts] = useState<PostData[]>([]);
+  const [posts, setPosts] = useState<VideoDetails[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState<number>(0);
   const screenHeight = Dimensions.get('window').height - (StatusBar.currentHeight || 0);
   const navigation = useNavigation<any>();
+  const videoRepository = useMemo(() => new VideoRepository(), []);
+  const route = useRoute<any>();
+  const {videoId} = route;
 
-  const fetchPost = useCallback(async (currentPage: number) => {
-    setHasMore(() => currentPage < postData.length);
+  const fetchPost = useCallback(async (currentPage: number, currentVideoId: string) => {
     setIsLoading(() => true);
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await wait(2000);
-    setPosts(currentData => [...currentData, postData[currentPage]]);
+    const response = await videoRepository.fetchNewFeedExclude({page: currentPage, pageSize: 2, videoId: currentVideoId});
+    if (response.result.length === 0) {
+      setHasMore(() => false);
+    } else {
+      setPosts(currentData => [...currentData, ...response.result]);
+      setHasMore(() => true);
+    }
     setIsLoading(() => false);
-  }, []);
+  }, [videoRepository]);
 
   useEffect(() => {
-    fetchPost(page);
-  }, [page, fetchPost]);
+    fetchPost(page, videoId).then(() => {
+      setPlayingVideo(posts[0].stat.videoId);
+    });
+  }, [fetchPost, page, posts, videoId]);
 
   const handleLoadMore = useCallback(() => {
     if (!isLoading && hasMore) {
@@ -277,14 +330,14 @@ export default function PostDetailsScreen() : React.JSX.Element {
     }
   }, [isLoading, hasMore]);
 
-  const [playingVideo, setPlayingVideo] = useState<string>(postData[0].owner.username);
+  const [playingVideo, setPlayingVideo] = useState<string | undefined>(undefined);
   const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: { item: PostData }[] }) => {
+    ({ viewableItems }: { viewableItems: { item: VideoDetails }[] }) => {
       console.log(
         'Viewable Items:',
-        viewableItems.map(({ item }) => item.owner.username)
+        viewableItems.map(({ item }) => item?.stat.videoId)
       );
-      const current = viewableItems[0]?.item.owner.username; // Đảm bảo không bị undefined
+      const current = viewableItems[0]?.item.stat.videoId; // Đảm bảo không bị undefined
       setPlayingVideo(current);
     },
     []
@@ -319,7 +372,7 @@ export default function PostDetailsScreen() : React.JSX.Element {
       renderItem={({item}) => {
         return (
           <PostDetails
-          play={item.owner.username === playingVideo}
+          play={item.stat.videoId === playingVideo}
           postData={item}
           onLoadComment={() => navigation.navigate('Comment Stack Screen')}
           />
