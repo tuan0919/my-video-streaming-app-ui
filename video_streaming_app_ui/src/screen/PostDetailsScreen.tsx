@@ -211,7 +211,7 @@ function PostDetails({postData : data, play, onLoadComment} : {postData: PostDat
           />
           {!play ? <Image
             source={{
-              uri: 'https://cdn.wallpapersafari.com/94/72/CNhaU1.jpg',
+              uri: data.post.thumbnail,
             }}
             style={{
               width: '100%',

@@ -12,6 +12,7 @@ interface VideoDetails {
         videoId: string;
         name: string;
         link: string;
+        thumbnail: string;
         description: string;
         viewCount: number;
         downVote: number;
