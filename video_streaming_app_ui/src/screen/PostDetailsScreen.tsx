@@ -321,10 +321,22 @@ export default function PostDetailsScreen() : React.JSX.Element {
     setIsLoading(() => false);
   }, [videoRepository]);
 
+  const fetchFirst = useCallback(async (currentVideoId: string) => {
+    setIsLoading(() => true);
+    const {result} = await videoRepository.getVideoDetails(currentVideoId);
+    setPosts(() => [result]);
+    setHasMore(() => true);
+    setIsLoading(() => false);
+  }, [videoRepository]);
+
   useEffect(() => {
-    console.log('current videoId: ', videoId);
     fetchPost(page, videoId);
   }, [fetchPost, page, videoId]);
+
+  useEffect(() => {
+    console.log('current videoId: ', videoId);
+    fetchFirst(videoId);
+  }, [fetchFirst, videoId]);
 
   const handleLoadMore = useCallback(() => {
     if (hasMore) {
