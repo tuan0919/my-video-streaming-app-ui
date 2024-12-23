@@ -14,8 +14,8 @@ global.TextDecoder = encoding.TextDecoder;
     <PaperProvider>
       <SafeAreaProvider>
         <GestureHandlerRootView style={styles.container}>
-          {/* <MainContainer/> */}
-          <PlayGroundScreen/>
+          <MainContainer/>
+          {/* <PlayGroundScreen/> */}
         </GestureHandlerRootView>
       </SafeAreaProvider>
     </PaperProvider>

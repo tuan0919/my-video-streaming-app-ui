@@ -21,7 +21,7 @@ const SearchPost = () => {
   }),[]);
   return (
     <TouchableOpacity style={[style.image_wrapper]}>
-      <Image source={{uri: 'https://scontent.fsgn2-7.fna.fbcdn.net/v/t39.30808-6/470192507_1767594360445430_3156703716611701728_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=Y7-tDCei58YQ7kNvgFnINHj&_nc_oc=AdjLDq4QlRXHERRzN_PyAsCrswg7cOqgXhkZnyJHCo_D0Zkap2xMK4GK145sUwJBTps&_nc_zt=23&_nc_ht=scontent.fsgn2-7.fna&_nc_gid=AYVCQ5n2gWifj88-lsFQ70T&oh=00_AYDUfofo8r8HcLzeDl8vTnxexjncCuE1EWdCMFghEansiQ&oe=6768739E'}}
+      <Image source={{uri: 'https://scontent.fsgn2-4.fna.fbcdn.net/v/t39.30808-6/471149363_1035201378644642_393119633264322117_n.jpg?_nc_cat=1&ccb=1-7&_nc_sid=127cfc&_nc_ohc=k4-N0EIMyiEQ7kNvgG7zI71&_nc_oc=Adjyn08VFt0HVX5Iz28FUk76EIpsqhKTUIzoQuzjFA8NN7xN68Y_p3YizZ4i2iabM7g&_nc_zt=23&_nc_ht=scontent.fsgn2-4.fna&_nc_gid=AFO9CXvE4gzWg2gAZzcuQQK&oh=00_AYBWG0fFkP8BAY3c8sx5bO5g0U7ne7V1r8-kJG00IVVYeA&oe=676F04C5'}}
       style={[style.image]}
       />
     </TouchableOpacity>

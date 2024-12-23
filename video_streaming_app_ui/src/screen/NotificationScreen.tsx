@@ -1,17 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ImageStyle, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import notificationJSON from '../data/notification-list.json';
+import { Notification, NotificationRepository } from '../repository';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 
-type Notification = {
-    username: string,
-    avatar: string,
-    thumbnail: string
-}
-
-const data : Notification[] = notificationJSON;
 
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
@@ -109,18 +103,27 @@ const NotifyRow = ({notify}: {notify: Notification}) : React.JSX.Element => {
             height: '100%',
         },
     }), []);
+    const navigation = useNavigation<any>();
+    const handlePress = useCallback(() => {
+        switch (notify.relatedEvent) {
+            case 'COMMENT_REPLY_EVENT': {
+                navigation.navigate('Comment Stack Screen');
+                break;
+            }
+            case 'NEW_USER_CREATED_EVENT': {
+                navigation.navigate('Profile Settings Stack Screen');
+                break;
+            }
+        }
+    }, [navigation, notify.relatedEvent]);
     return (
-        <TouchableOpacity style={[style.wrapper]}>
+        <TouchableOpacity style={[style.wrapper]} onPress={handlePress}>
             <View style={[style.avatar_wrapper]}>
                 <Image source={{uri: notify.avatar}} style={[style.avatar]} />
             </View>
             <View style={{flex: 1}}>
-                <Text>
-                    <Text style={[style.notifyText]}>Người bạn đang theo dõi, </Text>
-                    <Text style={[style.usernameText]}>@{notify.username}</Text>
-                    <Text style={[style.notifyText]}> đã thêm một video mới.</Text>
-                    <Text style={[style.timeText]}> 7 giờ trước</Text>
-                </Text>
+                <Text style={[style.notifyText]}>{notify.content}</Text>
+                <Text style={[style.timeText]}>{notify.createTime}</Text>
             </View>
             <View style={[style.thumbnail_wrapper]}>
                 <Image source={{uri: notify.thumbnail}} style={[style.thumbnail]}/>
@@ -130,14 +133,47 @@ const NotifyRow = ({notify}: {notify: Notification}) : React.JSX.Element => {
 };
 
 const NotificationList = () : React.JSX.Element => {
+    const [data, setData] = useState<Notification[]>([]);
+    const [page, setPage] = useState<number>(0);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const notificationRepository = useMemo(() => new NotificationRepository(), []);
+    const fetchNotification = useCallback(async (loadPage : number) => {
+        const response = await notificationRepository.getNotifications({page: loadPage, pageSize: 2});
+        if (response.result.length === 0) {
+            setHasMore(() => false);
+          } else {
+            setData((curr) => [...curr, ...response.result]);
+            setHasMore(() => true);
+          }
+    }, [notificationRepository]);
+    const handleLoadMore = useCallback(() => {
+        if (hasMore) {
+            setPage(prevPage => prevPage + 1);
+        }
+    }, [hasMore]);
+    useEffect(() => {
+        fetchNotification(page);
+    }, [fetchNotification, page]);
     const Seperator = useMemo(() => {
         return () => <View style={{ height: 13 }} />;
     }, []);
+    const LoadingFooter = useMemo(() => {
+        return (
+            hasMore &&
+            <View style={{flexDirection: 'row', height: 60, width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+                <ActivityIndicator size={20} animating={true} color={MD2Colors.green700} />
+                <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+            </View>
+        );
+        }, [hasMore]);
     return (
         <FlatList
             data={data}
             ItemSeparatorComponent={Seperator}
+            onEndReachedThreshold={1}
+            onEndReached={handleLoadMore}
             renderItem={({item}) => <NotifyRow notify={item} />}
+            ListFooterComponent={LoadingFooter}
         />
     );
 };
