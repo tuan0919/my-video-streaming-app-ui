@@ -107,7 +107,9 @@ const NotifyRow = ({notify}: {notify: Notification}) : React.JSX.Element => {
     const handlePress = useCallback(() => {
         switch (notify.relatedEvent) {
             case 'COMMENT_REPLY_EVENT': {
-                navigation.navigate('Comment Stack Screen');
+                navigation.navigate('Comment Stack Screen', {
+                    videoId: notify.routeObjectId,
+                });
                 break;
             }
             case 'NEW_USER_CREATED_EVENT': {
@@ -115,7 +117,7 @@ const NotifyRow = ({notify}: {notify: Notification}) : React.JSX.Element => {
                 break;
             }
         }
-    }, [navigation, notify.relatedEvent]);
+    }, [navigation, notify]);
     return (
         <TouchableOpacity style={[style.wrapper]} onPress={handlePress}>
             <View style={[style.avatar_wrapper]}>

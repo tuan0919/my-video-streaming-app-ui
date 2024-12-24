@@ -9,6 +9,7 @@ export interface Notification {
     thumbnail: string,
     relatedObjectId: string,
     avatar: string,
+    routeObjectId: string,
     relatedEvent: 'COMMENT_REPLY_EVENT'|
     'NEW_USER_CREATED_EVENT'
 }
