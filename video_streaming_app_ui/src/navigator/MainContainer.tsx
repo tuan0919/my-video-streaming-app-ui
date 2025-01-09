@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommentScreen, PostDetailsScreen, ProfileSettingsScreen } from '../screen';
 import TabNavigator from './TabNavigator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AuthenticateNavigator from './AuthenticateNavigator';
 
 export default function MainContainer () : React.JSX.Element {
   const Stack = createNativeStackNavigator();
@@ -19,6 +20,7 @@ export default function MainContainer () : React.JSX.Element {
         headerShown: false,
       }}>
         <Stack.Screen name="Tab Navigator" component={TabNavigator} />
+        <Stack.Screen name="AuthenticateNavigator" component={AuthenticateNavigator} />
         <Stack.Screen name="Post Details"
         options={{animation: 'slide_from_right'}}
         component={PostDetailsScreen} />

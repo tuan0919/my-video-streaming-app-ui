@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native';
 import { VideoRepository } from '../repository';
 import axios from 'axios';
 import NativeUploader from '../../specs/NativeUploader';
+import IconAntDesign from 'react-native-vector-icons/AntDesign';
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
         container: ViewStyle,
@@ -45,6 +46,62 @@ const HeaderNavigation = () : React.JSX.Element => {
             <TouchableOpacity style={[style.icon_wrapper]} onPress={() => navigation.goBack()}>
                 <IconMaterialIcons name="keyboard-backspace" style={[style.icon]}/>
             </TouchableOpacity>
+        </View>
+    );
+};
+
+
+const NotificationSuccess = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'lightgreen',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <IconAntDesign name="checkcircleo" color={'green'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Upload thành công</Text>
+                <Text style={{color: 'darkgreen'}}>Video của bạn đã được upload thành công, refresh để thấy thay đổi.</Text>
+            </View>
+            <IconAntDesign name="close" color={'green'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
+        </View>
+    );
+};
+
+
+const NotificationFailed = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'rgb(255, 56, 56)',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <IconAntDesign name="closecircleo" color={'darkred'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Upload thất bại</Text>
+                <Text style={{color: 'darkred'}}>Xin lỗi, đã xảy ra lỗi trong quá trình upload lên máy chủ.</Text>
+            </View>
+            <IconAntDesign name="close" color={'darkred'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
         </View>
     );
 };
@@ -226,6 +283,7 @@ export default function ReelScreen() : React.ReactElement {
             <Text style={{fontWeight: 'bold', color: 'black'}}>Chia sẻ video</Text>
           </TouchableOpacity>
         </View>
+        <NotificationFailed/>
       </>
       }
     </SafeAreaView>

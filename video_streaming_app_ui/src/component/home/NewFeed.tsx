@@ -54,7 +54,7 @@ function SmallUserProfile() {
         <Text style={[
           styles.followText,
           isFollowed ? {color: 'green', fontWeight: 'bold'} : {},
-        ]}>{isFollowed ? 'Followed' : 'Follow'}</Text>
+        ]}>{isFollowed ? 'Bỏ theo dõi' : 'Theo dõi'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -67,7 +67,7 @@ function CommentSection({currentUser : curUser} : {currentUser: User}) : React.J
         <Image style={styles.commentSectionAvatar} source={{uri: curUser.avatar}}/>
       </View>
       <TextInput style={styles.commentSectionTextInput}
-                 placeholder={'Add a comment...'}
+                 placeholder={'Thêm bình luận mới...'}
                  placeholderTextColor={'gray'}
                  cursorColor={'green'}
                  numberOfLines={1}
@@ -77,52 +77,32 @@ function CommentSection({currentUser : curUser} : {currentUser: User}) : React.J
   );
 }
 
-// function PostBody({data} : {data: PostData}) : React.JSX.Element {
-//   const [isLiked, setIsLiked] = useState<boolean>(data.post.isLiked);
-//   const [isBookMarked, setIsBookMarked] = useState<boolean>(false);
-//   return (
-//     <View style={styles.postBody}>
-//       <View style={styles.iconsContainer}>
-//         <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
-//           {isLiked ? (
-//             <AntDesignIcon name="heart" style={styles.icon} color="green" />
-//           ) : (
-//             <AntDesignIcon name="hearto" style={styles.icon} color="white" />
-//           )}
-//         </TouchableOpacity>
-//         <TouchableOpacity>
-//           <FontAwesome name="comment-o" style={styles.icon} color="white" />
-//         </TouchableOpacity>
-//         <TouchableOpacity
-//           onPress={() => setIsBookMarked(!isBookMarked)}
-//           style={{marginLeft: 'auto'}}>
-//           <FeatherIcon name="bookmark" style={{fontSize: 35}} color={isBookMarked ? 'green' : 'white'} />
-//         </TouchableOpacity>
-//       </View>
-//       <Text style={styles.likesCount}>{data.post.likes} likes</Text>
-//       <View style={{flexDirection: 'row'}}>
-//         <Text style={styles.postDescription}>{data.post.description}</Text>
-//       </View>
-//       <CommentSection currentUser={currentUser} />
-//     </View>
-//   );
-// }
-
 function PostBody({data} : {data: VideoDetails}) : React.JSX.Element {
   const [isLiked, setIsLiked] = useState<boolean>(false);
+  const [isDisliked, setIsDisliked] = useState<boolean>(false);
   const [isBookMarked, setIsBookMarked] = useState<boolean>(false);
   return (
     <View style={styles.postBody}>
       <View style={styles.iconsContainer}>
-        <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
+        <TouchableOpacity style={{flexDirection: 'row', gap: 5, alignItems: 'center'}} onPress={() => setIsLiked(!isLiked)}>
           {isLiked ? (
-            <AntDesignIcon name="heart" style={styles.icon} color="green" />
+            <AntDesignIcon name="like1" style={styles.icon} color="green" />
           ) : (
-            <AntDesignIcon name="hearto" style={styles.icon} color="white" />
+            <AntDesignIcon name="like2" style={styles.icon} color="white" />
           )}
+          <Text style={{fontWeight: 'bold', color: 'white'}}>{data.stat.downVote}</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+          {isDisliked ? (
+            <AntDesignIcon name="dislike1" style={styles.icon} color="green" />
+          ) : (
+            <AntDesignIcon name="dislike2" style={styles.icon} color="white" />
+          )}
+          <Text style={{fontWeight: 'bold', color: 'white'}}>{data.stat.downVote}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
           <FontAwesome name="comment-o" style={styles.icon} color="white" />
+          <Text style={{fontWeight: 'bold', color: 'white'}}>20</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setIsBookMarked(!isBookMarked)}
@@ -130,7 +110,6 @@ function PostBody({data} : {data: VideoDetails}) : React.JSX.Element {
           <FeatherIcon name="bookmark" style={{fontSize: 35}} color={isBookMarked ? 'green' : 'white'} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.likesCount}>{data.stat.upVote} likes</Text>
       <View style={{flexDirection: 'row'}}>
         <Text style={styles.postDescription}>{data.stat.description}</Text>
       </View>
@@ -138,22 +117,6 @@ function PostBody({data} : {data: VideoDetails}) : React.JSX.Element {
     </View>
   );
 }
-
-// function Post({data} : {data: PostData}) : React.JSX.Element {
-//   const navigation = useNavigation<any>();
-//   return (
-//     <View style={styles.postContainer}>
-//       <TouchableOpacity onPress={() => {
-//         navigation.navigate('Post Details');
-//       }}>
-//         <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.post.image}}/>
-//       </TouchableOpacity>
-//       <PostBody data={data}/>
-//       <SmallUserProfile data={data}/>
-
-//     </View>
-//   );
-// }
 
 function Post({data} : {data: VideoDetails}) : React.JSX.Element {
   const navigation = useNavigation<any>();
@@ -245,13 +208,13 @@ const styles = StyleSheet.create({
   },
   iconsContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 20,
     flex: 1,
     justifyContent: 'flex-start',
   },
   icon: {
-    fontSize: 30,
+    fontSize: 20,
     textAlign: 'center',
     textAlignVertical: 'center',
   },

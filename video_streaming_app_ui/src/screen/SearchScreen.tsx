@@ -3,8 +3,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
-import search_users from '../data/users.json';
-const SearchPost = () => {
+import search_users from '../data/search_users.json';
+import search_video_links from '../data/searchVideos.json';
+const SearchPost = ({link}: {link : string}) => {
   type SearchPost_Style = {
     image?: ImageStyle,
     image_wrapper?: ViewStyle,
@@ -21,7 +22,7 @@ const SearchPost = () => {
   }),[]);
   return (
     <TouchableOpacity style={[style.image_wrapper]}>
-      <Image source={{uri: 'https://scontent.fsgn2-4.fna.fbcdn.net/v/t39.30808-6/471149363_1035201378644642_393119633264322117_n.jpg?_nc_cat=1&ccb=1-7&_nc_sid=127cfc&_nc_ohc=k4-N0EIMyiEQ7kNvgG7zI71&_nc_oc=Adjyn08VFt0HVX5Iz28FUk76EIpsqhKTUIzoQuzjFA8NN7xN68Y_p3YizZ4i2iabM7g&_nc_zt=23&_nc_ht=scontent.fsgn2-4.fna&_nc_gid=AFO9CXvE4gzWg2gAZzcuQQK&oh=00_AYBWG0fFkP8BAY3c8sx5bO5g0U7ne7V1r8-kJG00IVVYeA&oe=676F04C5'}}
+      <Image source={{uri: link}}
       style={[style.image]}
       />
     </TouchableOpacity>
@@ -29,7 +30,7 @@ const SearchPost = () => {
 };
 
 const SearchPostContent = () => {
-  const [data, setData] = useState<any[]>([undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined])
+  const [data, setData] = useState<any[]>(search_video_links);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   type SearchPostContent_Style = {
     container?: ViewStyle,
@@ -55,7 +56,7 @@ const SearchPostContent = () => {
       { !isLoading ?
         <TouchableOpacity onPress={fetchMorePosts}>
           <Text style={{color: 'green', fontSize: 13, fontWeight: 'bold'}}>
-            - Tải thêm bài viết -
+            - Tải thêm video -
           </Text>
         </TouchableOpacity>
         :
@@ -80,18 +81,25 @@ const SearchPostContent = () => {
   }), []);
   return (
     <FlatList
-      data={data}
-      renderItem={() => <SearchPost/>}
+      data={[]}
+      renderItem={({item : link}) => <SearchPost link={link}/>}
       keyExtractor={(_, index) => index.toString()}
       contentContainerStyle={[style.container]}
-      ListFooterComponent={LoadingFooter}
+      // ListFooterComponent={LoadingFooter}
+      ListEmptyComponent={
+        <View style={{flexDirection: 'row', padding: 10, justifyContent: 'center', width: '100%'}}>
+          <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold'}}>Kết quả tìm kiếm trống...</Text>
+        </View>
+      }
     />
   );
 };
 
 type UserAccount = {
   username: string,
-  avatar: string
+  avatar: string,
+  follow: number,
+  bio: string,
 }
 
 const UserAccount = ({user} : {user: UserAccount}) => {
@@ -102,8 +110,8 @@ const UserAccount = ({user} : {user: UserAccount}) => {
       </View>
       <View style={[{maxWidth: '50%'}]}>
         <Text style={[{fontWeight: 'bold', color: 'white'}]}>@{user.username}</Text>
-        <Text style={[{color: 'white'}]} numberOfLines={1}>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Culpa veritatis laboriosam obcaecati similique officiis rem quas possimus sint quisquam ab dicta blanditiis quo adipisci enim, numquam exercitationem deleniti? A, animi?</Text>
-        <Text style={[{color: '#777777'}]}>Có 123 người theo dõi</Text>
+        <Text style={[{color: 'white'}]} numberOfLines={1}>{user.bio}</Text>
+        <Text style={[{color: '#777777'}]}>Có {user.follow} người theo dõi</Text>
       </View>
     </TouchableOpacity>
   );
@@ -145,7 +153,7 @@ const SearchUserContent = () => {
     data={data}
     renderItem={({item}) => <UserAccount user={item}/>}
     ListFooterComponent={LoadingFooter}
-    onEndReached={fetchMoreUsers}
+    // onEndReached={fetchMoreUsers}
     />
   );
 };
@@ -156,7 +164,7 @@ const renderScene = SceneMap({
 });
 
 const routes = [
-  { key: 'first', title: 'Bài viết' },
+  { key: 'first', title: 'Video' },
   { key: 'second', title: 'Người dùng' },
 ];
 

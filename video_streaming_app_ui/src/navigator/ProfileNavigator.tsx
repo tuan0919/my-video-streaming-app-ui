@@ -1,6 +1,7 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NotificationScreen, ProfileScreen} from '../screen';
+import SettingNavigator from './SettingNavigator';
 
 
 export default function ProfileNavigator(): React.JSX.Element {
@@ -14,9 +15,13 @@ export default function ProfileNavigator(): React.JSX.Element {
       >
       <Stack.Screen name="Profile Stack Screen" component={ProfileScreen} />
       <Stack.Screen
-      options={{animation: 'slide_from_left'}}
-      name="Notification Stack Screen"
-      component={NotificationScreen}
+        options={{animation: 'slide_from_left'}}
+        name="Notification Stack Screen"
+        component={NotificationScreen}
+      />
+      <Stack.Screen
+        name="SettingNavigator"
+        component={SettingNavigator}
       />
     </Stack.Navigator>
   );

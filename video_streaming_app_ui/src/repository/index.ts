@@ -3,7 +3,8 @@ import VideoDetails from './VideoRepository';
 import NotificationRepository from './NotificationRepository';
 import { Notification } from './NotificationRepository';
 import CommentRepository from './CommentRepository';
-import { CommentDetails } from './CommentRepository';
+import { CommentDetails, CommentCreationRequestDTO, CommentResponse, InteractCommentRequest } from './CommentRepository';
+import { UnreadCountResponse } from './NotificationRepository';
 
 export {
     VideoRepository,
@@ -11,5 +12,12 @@ export {
     NotificationRepository,
     CommentRepository,
 };
-export type { Notification, CommentDetails };
+export type {
+    Notification,
+    CommentDetails,
+    CommentCreationRequestDTO,
+    CommentResponse,
+    InteractCommentRequest,
+    UnreadCountResponse,
+};
 

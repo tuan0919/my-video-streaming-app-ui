@@ -1,10 +1,47 @@
-import React from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import {AppLogo} from '../index.ts';
+import { IMessage } from '@stomp/stompjs';
+import { WebSocketContext } from '../provider/WebSocketProvider.tsx';
+import { NotificationRepository, UnreadCountResponse } from '../../repository';
+import { WsResponse } from '../../model';
 
 export default function Header(): React.JSX.Element {
+  const {subscribe, unsubscribe, isConnected} = useContext(WebSocketContext);
+  useEffect(() => {
+    const handleNotification = (message: IMessage) => {
+      const response : WsResponse<any> = JSON.parse(message.body);
+      if (response.type === 'count_unread') {
+        const data : UnreadCountResponse = response.payload;
+        setCount(data.unreadCount);
+      }
+    };
+    if (isConnected) {
+      subscribe('notification', handleNotification);
+    }
+    return () => {
+      unsubscribe('notification', handleNotification);
+    };
+  }, [isConnected, subscribe, unsubscribe]);
+  const [count, setCount] = useState<number>(0);
+  const notificationRepository = useMemo(() => new NotificationRepository(), []);
+  const fetchCountNotification = useCallback(async () => {
+    try {
+      const response = await notificationRepository.countUnreadnotifications();
+      if (response && response.result) {
+          setCount(() => response.result.unreadCount);
+      } else {
+          console.error('Invalid response:', response);
+      }
+    } catch (error : any) {
+      console.error(error);
+    }
+  }, [notificationRepository]);
+  useEffect(() => {
+    fetchCountNotification();
+  }, [fetchCountNotification]);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
@@ -21,9 +58,12 @@ export default function Header(): React.JSX.Element {
         </TouchableOpacity>
         <TouchableOpacity style={{position: 'relative'}}>
           <IconIonicons style={styles.icon} name="notifications-outline"/>
-          <View style={styles.unreadBadget}>
-            <Text style={styles.badgetText}>9+</Text>
-          </View>
+          {
+            count > 0 &&
+            <View style={styles.unreadBadget}>
+              <Text style={styles.badgetText}>{count}</Text>
+            </View>
+          }
         </TouchableOpacity>
       </View>
     </SafeAreaView>

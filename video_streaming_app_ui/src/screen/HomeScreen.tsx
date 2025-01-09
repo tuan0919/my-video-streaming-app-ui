@@ -1,5 +1,5 @@
 import {SafeAreaView, StyleSheet, View} from 'react-native';
-import React from 'react';
+import React, {  } from 'react';
 import {Header, NewFeed, Stories} from '../component';
 
 export default function HomeScreen():React.ReactElement {

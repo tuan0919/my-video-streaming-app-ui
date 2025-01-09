@@ -7,6 +7,9 @@ import PostDetailsScreen from './PostDetailsScreen.tsx';
 import ProfileSettingsScreen from './ProfileSettingsScreen.tsx';
 import NotificationScreen from './NotificationScreen.tsx';
 import CommentScreen from './CommentScreen.tsx';
+import SettingsScreen from './SettingsScreen.tsx';
+import LoginScreen from './LoginScreen.tsx';
+import SignupScreen from './SignupScreen.tsx';
 export {
   HomeScreen,
   ProfileScreen,
@@ -17,4 +20,7 @@ export {
   ProfileSettingsScreen,
   NotificationScreen,
   CommentScreen,
+  SettingsScreen,
+  LoginScreen,
+  SignupScreen,
 };

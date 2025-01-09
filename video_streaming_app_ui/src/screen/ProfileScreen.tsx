@@ -1,4 +1,4 @@
-import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, useWindowDimensions, View, ViewStyle} from 'react-native';
 import React, { useMemo } from 'react';
 import { Text } from 'react-native';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -7,6 +7,7 @@ import posted_posts from '../data/user-profile-posted.json';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ExploreFriends } from '../component';
 import { useNavigation } from '@react-navigation/native';
+import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 
 type Post = {
   image: string,
@@ -53,10 +54,10 @@ const ProfileHeader = () : React.JSX.Element => {
         <TouchableOpacity style={{position: 'relative'}} onPress={() => navigation.navigate('Notification Stack Screen')}>
           <IconIonicons size={30} color={'white'} name="notifications-outline"/>
           <View style={[unreadBadget]}>
-            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white'}}>9+</Text>
+            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white'}}>4</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={{position: 'relative'}}>
+        <TouchableOpacity style={{position: 'relative'}} onPress={() => navigation.navigate('SettingNavigator')}>
           <IconEntypo size={30} color={'white'} name="menu"/>
         </TouchableOpacity>
       </View>
@@ -167,13 +168,17 @@ const ProfileInfo = () : React.JSX.Element => {
             <Text style={[statOverallStyle.bottomText]}>Người theo dõi</Text>
           </View>
           <View>
-            <Text style={[statOverallStyle.topText]}>16</Text>
+            <Text style={[statOverallStyle.topText]}>5</Text>
             <Text style={[statOverallStyle.bottomText]}>Đang theo dõi</Text>
           </View>
         </View>
       </View>
       <View style={[descriptionStyle.wrapper]}>
-        <Text style={[descriptionStyle.descriptionText]}>Tôi là sinh viên trường đại học Nông Lâm Thành Phố Hồ Chí Minh 🐧</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Giới tính: Nam</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Quốc gia: Việt Nam</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Sống tại: 31 / 8B Khu phố 4 Thị Trấn Hòa Thành</Text>
+        <Text style={[descriptionStyle.descriptionText, {fontWeight: 'bold'}]}>Mô tả:</Text>
+        <Text style={[descriptionStyle.descriptionText]}>Tôi là sinh viên trường đại học nông lâm</Text>
       </View>
     </View>
   );
@@ -241,15 +246,7 @@ const ProfilePostArchived = () : React.JSX.Element => {
     },
   }), []);
   return (
-    <View style={[style.container]}>
-      <View style={[style.title_wrapper]}>
-        <IconEntypo name="folder-video" style={[style.title_icon]}/>
-        <Text style={[style.title_text]}>Bài viết đã lưu</Text>
-      </View>
-      <FlatList horizontal={true} data={data} renderItem={({item : post}) => {
-        return <PostCard post={post}/>;
-      }}/>
-    </View>
+    <Text style={{color: 'white'}}>Hello there</Text>
   );
 };
 
@@ -334,7 +331,7 @@ const ProfilePostedPost = () : React.JSX.Element => {
   }
   const style = useMemo<ProfilePostedPostStyle>(() => ({
     container: {
-
+      paddingTop: 20,
     },
     title_wrapper: {
       flexDirection: 'row',
@@ -353,13 +350,39 @@ const ProfilePostedPost = () : React.JSX.Element => {
   }), []);
   return (
     <View style={[style.container]}>
-      <View style={[style.title_wrapper]}>
-        <IconEntypo name="folder-video" style={[style.title_icon]}/>
-        <Text style={[style.title_text]}>Bài viết đã đăng tải</Text>
-      </View>
       <FlatList horizontal={true} data={data} renderItem={({item : post}) => {
         return <PostCard post={post}/>;
       }}/>
+    </View>
+  );
+};
+const Test = () => {
+  const layout = useWindowDimensions();
+  const [index, setIndex] = React.useState(0);
+  const routes = [
+    { key: 'first', title: 'Video đã lưu' },
+    { key: 'second', title: 'Video đã đăng' },
+  ];
+  return (
+    <View style={{height: 400}}>
+      <TabView
+      navigationState={{ index, routes }}
+      renderScene={SceneMap({
+        first: ProfilePostedPost,
+        second: ProfilePostedPost,
+      })}
+      renderTabBar={(props) => {
+        return (
+          <TabBar
+            {...props}
+            style={{backgroundColor: 'black'}}
+            indicatorStyle={{backgroundColor: 'white'}}
+          />
+        );
+      }}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
+      />
     </View>
   );
 };
@@ -368,15 +391,12 @@ export default function ProfileScreen() : React.ReactElement {
   const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView nestedScrollEnabled contentContainerStyle={{flexGrow: 1}}>
         <ProfileHeader/>
         <ProfileInfo/>
         <ProfileActions onPressEditProfile={() => navigation.navigate('Profile Settings Stack Screen')}/>
         <ExploreFriends/>
-        <ProfileBody>
-          <ProfilePostArchived/>
-          <ProfilePostedPost/>
-        </ProfileBody>
+        <Test/>
       </ScrollView>
     </SafeAreaView>
   );

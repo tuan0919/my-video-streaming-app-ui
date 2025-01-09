@@ -1,9 +1,10 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import React, { useMemo } from 'react';
 import { ViewStyle } from 'react-native';
 import { TextStyle } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
+import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import IconFeather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { RadioButton, TextInput } from 'react-native-paper';
@@ -58,10 +59,11 @@ const AvatarSetting = () : React.JSX.Element => {
     }
     const style = useMemo<AvatarSetting_Style>(() => ({
         container: {
-            flexDirection: 'row',
+            flexDirection: 'column',
             justifyContent: 'center',
             height: 150,
             alignItems: 'center',
+            gap: 10,
         },
         button_wrapper: {
             borderRadius: 50,
@@ -79,9 +81,21 @@ const AvatarSetting = () : React.JSX.Element => {
     }), []);
     return (
         <View style={[style.container]}>
-            <TouchableOpacity style={[style.button_wrapper]}>
+            {/* <TouchableOpacity style={[style.button_wrapper]}>
                 <IconEntypo name="camera" style={[style.icon]}/>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+            <View style={[{
+                width: 100,
+                height: 100,
+                overflow: 'hidden',
+                borderRadius: 50,
+            }]}>
+                <Image
+                source={{uri: 'https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x4.jpg'}}
+                style={{width: '100%', height: '100%'}}
+                />
+            </View>
+            <Text style={{fontWeight: 'bold', color: 'green'}}>Chỉnh sửa avatar</Text>
         </View>
     );
 };
@@ -164,6 +178,7 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 mode="outlined"
                 label={<Text style={[style.label]}>Họ và tên</Text>}
                 activeOutlineColor="green"
+                value="Nguyễn Quốc Anh Tuấn"
                 outlineColor="green"
                 textColor="white"
             />
@@ -188,6 +203,24 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 </TouchableOpacity>
             </View>
             <TextInput
+                style={[style.input_field]}
+                mode="outlined"
+                label={<Text style={[style.label]}>Quốc gia</Text>}
+                activeOutlineColor="green"
+                value="Việt Nam"
+                outlineColor="green"
+                textColor="white"
+            />
+            <TextInput
+                style={[style.input_field]}
+                mode="outlined"
+                label={<Text style={[style.label]}>Địa chỉ</Text>}
+                activeOutlineColor="green"
+                value="31 / 8B Khu phố 4 Thị Trấn Hòa Thành"
+                outlineColor="green"
+                textColor="white"
+            />
+            <TextInput
                 style={[style.input_field, {
                     height: 150,
                     textAlignVertical: 'top',
@@ -199,6 +232,7 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 activeOutlineColor="green"
                 outlineColor="green"
                 textColor="white"
+                value="Tôi là sinh viên trường đại học nông lâm"
             />
             <TouchableOpacity style={[style.button_action_wrapper]}>
                 <View style={[style.button_edit]}>
@@ -206,6 +240,61 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                     <IconFeather name="edit" color={'black'} size={20}/>
                 </View>
             </TouchableOpacity>
+        </View>
+    );
+};
+
+const NotificationSuccess = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'lightgreen',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <IconAntDesign name="checkcircleo" color={'green'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Cập nhật thành công</Text>
+                <Text style={{color: 'darkgreen'}}>Bạn đã cập nhật lại thông tin cá nhân. Vui lòng refresh để thấy thay đổi.</Text>
+            </View>
+            <IconAntDesign name="close" color={'green'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
+        </View>
+    );
+};
+
+
+const NotificationFailed = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'rgb(255, 56, 56)',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <IconAntDesign name="closecircleo" color={'darkred'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Cập nhật thất bại</Text>
+                <Text style={{color: 'darkred'}}>Thông tin bạn điền không hợp lệ, kiểm tra lại.</Text>
+            </View>
+            <IconAntDesign name="close" color={'darkred'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
         </View>
     );
 };
@@ -223,11 +312,14 @@ const ProfileSettingsScreen = () : React.JSX.Element => {
         },
     }), []);
     return (
-        <View style={[style.container]}>
-            <HeaderNavigation/>
-            <AvatarSetting/>
-            <AccountFieldsSetting/>
-        </View>
+        <>
+            <NotificationFailed/>
+            <View style={[style.container]}>
+                <HeaderNavigation/>
+                <AvatarSetting/>
+                <AccountFieldsSetting/>
+            </View>
+        </>
     );
 };
 

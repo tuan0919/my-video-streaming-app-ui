@@ -6,13 +6,13 @@
       "isFollowed": true
     },
     "post": {
-      "description": "Fishing with my friends",
+      "description": "Câu cá với bạn",
       "image": "https://random.imagecdn.app/500/800",
       "likes": 123,
       "comments": 456,
       "isLiked": false
     },
-    "time": "two minutes ago"
+    "time": "hai phút trước"
   },
   {
     "owner": {
@@ -27,7 +27,7 @@
       "comments": 134,
       "isLiked": true
     },
-    "time": "ten minutes ago"
+    "time": "mười phút trước"
   },
   {
     "owner": {

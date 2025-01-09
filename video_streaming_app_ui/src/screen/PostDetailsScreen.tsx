@@ -164,13 +164,21 @@ function PostContent({data, onLoadComment, style}: PostContentProps) : React.JSX
   return (
     <View style={[styles.postContent, style]}>
       <View style={styles.postActionList}>
+      <TouchableOpacity style={[iconWrap]}>
+          <AntDesignIcon name={'eyeo'} style={iconStyle} />
+          <Text style={[textStyle]}>4</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={[iconWrap]}>
-          <AntDesignIcon name={'hearto'} style={iconStyle} />
+          <AntDesignIcon name={'like2'} style={iconStyle} />
           <Text style={[textStyle]}>{data.stat.upVote}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[iconWrap]}>
+          <AntDesignIcon name={'dislike2'} style={iconStyle} />
+          <Text style={[textStyle]}>{data.stat.downVote}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[iconWrap]} onPress={onLoadComment}>
           <FontistoIcon name={'comment'} style={[iconStyle, {transform: [{ scaleX: -1 }]}]} />
-          <Text style={[textStyle]}>69</Text>
+          <Text style={[textStyle]}>20</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[iconWrap]}>
           <IoniconsIcon name="bookmark-outline" style={[iconStyle, {fontSize: 30}]} />

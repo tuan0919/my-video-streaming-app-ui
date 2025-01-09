@@ -1,13 +1,14 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { createContext, Dispatch, ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { Image, ImageStyle, KeyboardAvoidingView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import commentJSON from '../data/comments.json';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import { CommentDetails, CommentRepository } from '../repository';
+import { WebSocketContext } from '../component/provider/WebSocketProvider';
+import { IMessage } from '@stomp/stompjs';
 
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
@@ -51,7 +52,13 @@ const HeaderNavigation = () : React.JSX.Element => {
     );
 };
 
-const Comment = React.memo(({comment} : {comment: CommentDetails}) => {
+interface CommentProps {
+  comment: CommentDetails,
+  handleLike?: (targetId : string) => void,
+  handleDislike?: (targetId : string) => void,
+  handleReply?: (targetComment: CommentDetails) => void,
+}
+const Comment = React.memo(({comment, handleLike, handleDislike} : CommentProps) => {
   type Comment_Style = {
     contentContainer?: ViewStyle,
     commentContainer?: ViewStyle,
@@ -91,15 +98,20 @@ const Comment = React.memo(({comment} : {comment: CommentDetails}) => {
   const renderItem = useCallback(({ item }: { item: CommentDetails }) => {
     return <Comment comment={item} />;
   }, []);
+  const {state, dispatch} = useContext(ScreenContext);
+  const replyingComment = state.replyingComment;
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [comments, setComments] = useState<CommentDetails[]>([]);
   const [page, setPage] = useState<number>(0);
   const commentRepository = useMemo(() => new CommentRepository(), []);
+  const [action, setAction] = useState<string>(comment.action || 'NO_ACTION');
+  const [likeCounts, setLikeCounts] = useState<number>(comment.comment.likeCounts);
+  const [dislikeCounts, setDislikeCounts] = useState<number>(comment.comment.dislikeCounts);
 
   const fetchCommentsReply = useCallback(async (currentPage: number) => {
     setIsLoading(() => true);
     const response = await commentRepository.getCommentsReplyOfComment({commentId: comment.comment.id, page: currentPage, pageSize: 2});
-    console.log('data: ', response.result);
     setComments((curr) => [...curr, ...response.result]);
     setIsLoading(() => false);
   }, [commentRepository, comment]);
@@ -134,19 +146,36 @@ const Comment = React.memo(({comment} : {comment: CommentDetails}) => {
         <Text style={{color: 'white'}}>{comment.comment.content}</Text>
         <View style={{flexDirection: 'row', gap: 10}}>
           <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              setAction(() => 'DISLIKE');
+              setDislikeCounts(prev => prev + 1);
+              handleDislike && handleDislike(comment.comment.id);
+            }}>
+            { action === 'DISLIKE' ?
+              <AntDesignIcon name="dislike1" style={{fontSize: 20, color: 'green'}}/> :
               <AntDesignIcon name="dislike2" style={{fontSize: 20, color: 'lightgray'}}/>
+            }
             </TouchableOpacity>
-            <Text style={{color: 'white', fontSize: 12}}>{comment.comment.dislikeCounts}</Text>
+            <Text style={{color: 'white', fontSize: 12}}>{dislikeCounts}</Text>
           </View>
           <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              setAction(() => 'LIKE');
+              setLikeCounts(prev => prev + 1);
+              handleLike && handleLike(comment.comment.id);
+            }}>
+            { action === 'LIKE' ?
+              <AntDesignIcon name="like1" style={{fontSize: 20, color: 'green'}}/> :
               <AntDesignIcon name="like2" style={{fontSize: 20, color: 'lightgray'}}/>
+            }
             </TouchableOpacity>
-            <Text style={{color: 'white', fontSize: 12}}>{comment.comment.likeCounts}</Text>
+            <Text style={{color: 'white', fontSize: 12}}>{likeCounts}</Text>
           </View>
-          <TouchableOpacity>
-            <Text style={{fontWeight: 'bold', color: 'gray'}}>Reply</Text>
+          <TouchableOpacity onPress={() => dispatch({type: 'SET_REPLYING_COMMENT', payload: comment})}>
+            { replyingComment?.comment.id !== comment.comment.id ?
+              <Text style={{fontWeight: 'bold', color: 'gray'}}>Phản hồi</Text> :
+              <Text style={{fontWeight: 'bold', color: 'green'}}>Đang phản hồi</Text>
+            }
           </TouchableOpacity>
         </View>
         {comment.comment.replyCounts &&
@@ -172,26 +201,16 @@ const Comment = React.memo(({comment} : {comment: CommentDetails}) => {
   );
 });
 
-const CommentList = () : React.JSX.Element => {
-  const [comments, setComments] = useState<CommentDetails[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const route = useRoute<any>();
-  const {videoId} = route.params;
-  const [page, setPage] = useState<number>(0);
-  const commentRepository = useMemo(() => new CommentRepository(), []);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const fetchMoreComments = useCallback(async (currentPage: number) => {
-    setIsLoading(() => true);
-    const response = await commentRepository.getCommentsOfVideo({videoId, page: currentPage, pageSize: 2});
-    if (response.result.length === 0) {
-      setHasMore(() => false);
-    } else {
-      setComments((curr) => [...curr, ...response.result]);
-      setHasMore(() => true);
-    }
-    setIsLoading(() => false);
-  }, [commentRepository, videoId]);
+interface CommentListProps {
+  onEndReached: () => void,
+  hasMore: boolean,
+  data: CommentDetails[],
+  handleLike?: (targetId : string) => void,
+  handleDislike?: (targetId : string) => void,
+  handleReply?: (targetComment: CommentDetails) => void,
+}
 
+const CommentList = ({onEndReached, hasMore, data, handleLike, handleDislike} : CommentListProps) : React.JSX.Element => {
   const LoadingFooter = useMemo(() => {
     return (
       hasMore &&
@@ -200,14 +219,9 @@ const CommentList = () : React.JSX.Element => {
           <ActivityIndicator animating={true} color={MD2Colors.green700} />
           <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
         </View>
-      </View>
+      </View> || <View/>
     );
   }, [hasMore]);
-
-  const handleLoadMore = useCallback(() => {
-    setPage(currentPage => currentPage + 1);
-    fetchMoreComments(page);
-  }, [fetchMoreComments, page]);
   const seperator = () => {
       return (
           <View style={{height: 20}}/>
@@ -215,17 +229,161 @@ const CommentList = () : React.JSX.Element => {
   };
     return (
         <FlatList
-          data={comments}
+          data={data}
           onEndReachedThreshold={0.7}
-          onEndReached={handleLoadMore}
+          onEndReached={onEndReached}
           contentContainerStyle={{paddingVertical: 10}}
-          renderItem={({item}) => <Comment comment={item}/>}
+          renderItem={({item}) => <Comment comment={item} handleLike={handleLike} handleDislike={handleDislike}/>}
           ItemSeparatorComponent={seperator}
           ListFooterComponent={LoadingFooter}
       />
     );
 };
 
+const InputFields = ({onSubmitComment} : {onSubmitComment: (userInput : string) => void}): React.JSX.Element => {
+  const [comment, setComment] = useState<string>();
+  const {state, dispatch} = useContext(ScreenContext);
+  const replyingComment = state.replyingComment;
+  return (
+    <>
+      {
+        replyingComment &&
+        <View style={{backgroundColor: 'rgb(37, 37, 37)', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 10}}>
+          <Text style={{color: 'white'}}>Đang phản hồi bình luận của @{replyingComment.ownerProfile.username}</Text>
+          <TouchableOpacity onPress={() => dispatch({type: 'SET_REPLYING_COMMENT', payload: null})}>
+            <AntDesignIcon name="closecircleo" color={'white'} size={20}/>
+          </TouchableOpacity>
+        </View>
+      }
+      <KeyboardAvoidingView style={{
+      paddingHorizontal: 10,
+      backgroundColor: 'black',
+      flexDirection: 'row',
+      alignItems: 'center',
+      position: 'relative',
+      }}
+      >
+        <TextInput
+            style={{color: 'white', width: '80%'}}
+            placeholderTextColor={'gray'}
+            cursorColor={'green'}
+            numberOfLines={1}
+            value={comment}
+            onChangeText={value => setComment(() => value)}
+            selectionColor={'green'}
+            placeholder="Nhập bình luận của bạn tại đây"
+        />
+        <TouchableOpacity
+          style={{
+              position: 'absolute',
+              right: 10,
+            }}
+            onPress={() => {
+              comment && onSubmitComment(comment);
+              setComment(() => '');
+            }}
+            >
+              <FeatherIcon name="send" style={{
+                color: 'lightgray',
+                fontSize: 24,
+              }}/>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </>
+  );
+}
+
+const NotificationSuccess = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'lightgreen',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <AntDesignIcon name="checkcircleo" color={'green'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Thêm bình luận thành công</Text>
+                <Text style={{color: 'darkgreen'}}>Bạn đã thêm bình luận mới thành công. Vui lòng refresh lại để cập nhật thay đổi.</Text>
+            </View>
+            <AntDesignIcon name="close" color={'green'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
+        </View>
+    );
+};
+const NotificationFailed = () => {
+    return (
+        <View style={{flexDirection: 'row',
+            gap: 10, alignItems: 'center',
+            backgroundColor: 'rgb(255, 56, 56)',
+            borderRadius: 10, width: 300,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            zIndex: 999,
+            transform: [
+                {translateX: '-50%'},
+                {translateY: '-50%'},
+            ],
+        }}
+        >
+            <AntDesignIcon name="closecircleo" color={'darkred'} size={30}/>
+            <View style={[{gap: 10, flex: 1}]}>
+                <Text style={{fontWeight: 'bold', color: 'white'}}>Thêm bình luận thất bại</Text>
+                <Text style={{color: 'darkred'}}>Thêm bình luận thất bại, video mà bạn đang bình luận đã bị xóa.</Text>
+            </View>
+            <AntDesignIcon name="close" color={'darkred'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
+        </View>
+    );
+};
+interface ScreenState {
+  replyingComment: CommentDetails | null;
+}
+type ActionType = { type: 'SET_REPLYING_COMMENT'; payload: CommentDetails | null };
+interface ScreenContextProps {
+  state: ScreenState;
+  dispatch: Dispatch<ActionType>;
+}
+const ScreenContext = createContext<ScreenContextProps>({
+  state: { replyingComment: null },
+  dispatch: () => undefined, // No-op function
+});
+
+const ScreenReducer = (state: ScreenState, action: ActionType): ScreenState => {
+  switch (action.type) {
+    case 'SET_REPLYING_COMMENT':
+      return { ...state, replyingComment: action.payload };
+    default:
+      throw new Error(`Unhandled action type: ${action.type}`);
+  }
+};
+
+const CommentScreenContextProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}): React.JSX.Element => {
+  const initialState: ScreenState = {
+    replyingComment: null,
+  };
+
+  const [state, dispatch] = useReducer(ScreenReducer, initialState);
+
+  return (
+    <ScreenContext.Provider value={{ state, dispatch }}>
+      {children}
+    </ScreenContext.Provider>
+  );
+};
 const CommentScreen = () : React.JSX.Element => {
     type CommentScreen_Style = {
         container?: ViewStyle,
@@ -238,41 +396,73 @@ const CommentScreen = () : React.JSX.Element => {
             position: 'relative',
         },
     }), []);
+    const commentRepository = useMemo(() => new CommentRepository(), []);
+    const route = useRoute<any>();
+    const {videoId} = route.params;
+    const [comments, setComments] = useState<CommentDetails[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [page, setPage] = useState<number>(0);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const fetchMoreComments = useCallback(async (currentPage: number) => {
+      setIsLoading(() => true);
+      const response = await commentRepository.getCommentsOfVideo({videoId, page: currentPage, pageSize: 2});
+      if (response.result.length === 0) {
+        setHasMore(() => false);
+      } else {
+        setComments((curr) => [...curr, ...response.result]);
+        setHasMore(() => true);
+      }
+      setIsLoading(() => false);
+    }, [commentRepository, videoId]);
+    const handleLoadMore = useCallback(() => {
+      setPage(currentPage => currentPage + 1);
+      fetchMoreComments(page);
+    }, [fetchMoreComments, page]);
     return (
+      <>
         <View style={[style.container]}>
-            <HeaderNavigation/>
-            <CommentList/>
-            <KeyboardAvoidingView style={{
-                paddingHorizontal: 10,
-                backgroundColor: 'black',
-                flexDirection: 'row',
-                alignItems: 'center',
-                position: 'relative',
-            }}
-            >
-                <TextInput
-                    style={{color: 'white', width: '80%'}}
-                    placeholderTextColor={'gray'}
-                    cursorColor={'green'}
-                    numberOfLines={1}
-                    selectionColor={'green'}
-                    placeholder="Enter your comment"
-                />
-                <TouchableOpacity style={{
-                    position: 'absolute',
-                    right: 10,
-                    top: '50%',
-                    transform: [
-                        { translateY: '-50%' },
-                    ],
-                    }}>
-                    <FeatherIcon name="send" style={{
-                    color: 'lightgray',
-                    fontSize: 24,
-                    }} />
-                </TouchableOpacity>
-            </KeyboardAvoidingView>
+          <HeaderNavigation/>
+          <CommentScreenContextProvider>
+            <CommentList
+              onEndReached={handleLoadMore}
+              data={comments}
+              hasMore={hasMore}
+              handleLike={(commentId) => {
+                commentRepository.reactToComment({action: 'LIKE'}, commentId)
+                  .then(response => {
+                    console.log('LIKE COMMENT THANH CONG');
+                    console.log(response);
+                  }).catch(error => {
+                    console.log('CO LOI XAY RA');
+                    console.error(error);
+                  });
+              }}
+              handleDislike={(commentId) => {
+                commentRepository.reactToComment({action: 'DISLIKE'}, commentId)
+                  .then(response => {
+                    console.log('DISLIKE COMMENT THANH CONG');
+                    console.log(response);
+                  }).catch(error => {
+                    console.log('CO LOI XAY RA');
+                    console.error(error);
+                  });
+              }}
+            />
+            <InputFields onSubmitComment={(userInpput) => {
+              commentRepository.createNewComment({
+                content: userInpput,
+                videoId,
+              }).then(response => {
+                console.log('INSER THANH CONG');
+                console.log(response);
+              }).catch(error => {
+                console.log('CO LOI XAY RA');
+                console.error(error);
+              });
+            }}/>
+          </CommentScreenContextProvider>
         </View>
+      </>
     );
 };
 

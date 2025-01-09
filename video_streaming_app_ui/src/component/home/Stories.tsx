@@ -33,7 +33,7 @@ function CurrentUserProfile({user} : {user: User}): React.JSX.Element {
         <IconAntDesign name="pluscircle" style={styles.plusIcon} />
         <Image style={styles.storyImage} source={{uri: user.avatar}} />
       </View>
-      <Text style={[styles.storyName, {maxWidth: 90}]}>Your story</Text>
+      <Text style={[styles.storyName, {maxWidth: 90}]}>Thêm video</Text>
     </TouchableOpacity>
   );
 }
