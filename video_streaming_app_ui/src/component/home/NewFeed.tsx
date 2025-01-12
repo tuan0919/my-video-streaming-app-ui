@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import post_data from '../../data/user-posts.json';
 import user from '../../data/logged-in-user.json';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -9,41 +8,22 @@ import {useNavigation} from '@react-navigation/native';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import { VideoDetails, VideoRepository } from '../../repository';
 
-interface PostData {
-  owner: {
-    username: string;
-    avatar: string;
-    isFollowed: boolean;
-  };
-  post: {
-    description: string;
-    image: string;
-    likes: number;
-    comments: number;
-    isLiked: boolean;
-  };
-  time: string;
-}
-
 interface User {
   username: string;
   avatar: string;
 }
-
-const posts: PostData[] = post_data;
 const currentUser : User = user;
 
-function SmallUserProfile() {
-  const data = posts[0];
-  const [isFollowed, setIsFollowed] = useState<boolean>(data.owner.isFollowed);
+function SmallUserProfile({data} : {data: VideoDetails}) {
+  const [isFollowed, setIsFollowed] = useState<boolean>(data.isFollowed);
   return (
     <View style={styles.profileWrapper}>
       <View style={styles.avatarWrapper}>
-        <Image style={styles.avatar} source={{uri: data.owner.avatar}}/>
+        <Image style={styles.avatar} source={{uri: data.ownerProfile.avatar}}/>
       </View>
       <View style={styles.profileInfo}>
-        <Text style={styles.profileInfoText}>{data.owner.username}</Text>
-        <Text style={styles.profileInfoDateTime}>{data.time}</Text>
+        <Text style={styles.profileInfoText}>{data.ownerProfile.username}</Text>
+        <Text style={styles.profileInfoDateTime}>{data.stat.createTime}</Text>
       </View>
       <TouchableOpacity
         style={[
@@ -130,7 +110,7 @@ function Post({data} : {data: VideoDetails}) : React.JSX.Element {
         <Image style={styles.postImage} resizeMode={'cover'} source={{uri: data.stat.thumbnail}}/>
       </TouchableOpacity>
       <PostBody data={data}/>
-      <SmallUserProfile/>
+      <SmallUserProfile data={data}/>
     </View>
   );
 }

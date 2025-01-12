@@ -7,6 +7,7 @@ export default interface VideoDetails {
         userId: string;
         username: string;
         fullName: string;
+        avatar: string;
     },
     stat: {
         videoId: string;
@@ -18,7 +19,7 @@ export default interface VideoDetails {
         downVote: number;
         upVote: number;
         progress: number;
-        action: 'UP_VOTE' | 'DOWN_VOTE' | undefined;
+        action: 'UP_VOTE' | 'DOWN_VOTE' | undefined | null;
         createTime: string;
     },
     isFollowed: boolean,

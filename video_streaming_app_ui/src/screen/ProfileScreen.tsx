@@ -1,5 +1,5 @@
 import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, useWindowDimensions, View, ViewStyle} from 'react-native';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Text } from 'react-native';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
@@ -8,6 +8,8 @@ import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ExploreFriends } from '../component';
 import { useNavigation } from '@react-navigation/native';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
+import { ClientView_UserPageDetailsDTO, UserRepository } from '../repository';
 
 type Post = {
   image: string,
@@ -45,11 +47,11 @@ const buttonWrapper : ViewStyle = {
   gap: 15,
 };
 
-const ProfileHeader = () : React.JSX.Element => {
+const ProfileHeader = ({details} : {details : ClientView_UserPageDetailsDTO}) : React.JSX.Element => {
   const navigation = useNavigation<any>();
   return (
     <View style={[profileStyle]}>
-      <Text style={[usernameText]}>nqat0919</Text>
+      <Text style={[usernameText]}>{details.user.username}</Text>
       <View style={[buttonWrapper]}>
         <TouchableOpacity style={{position: 'relative'}} onPress={() => navigation.navigate('Notification Stack Screen')}>
           <IconIonicons size={30} color={'white'} name="notifications-outline"/>
@@ -65,15 +67,7 @@ const ProfileHeader = () : React.JSX.Element => {
   );
 };
 
-const ProfileBody = ({children, style} : {children: React.ReactNode, style?: ViewStyle}) : React.JSX.Element => {
-  return (
-    <View style={[style]}>
-      {children}
-    </View>
-  );
-};
-
-const ProfileInfo = () : React.JSX.Element => {
+const ProfileInfo = ({details} : {details: ClientView_UserPageDetailsDTO}) : React.JSX.Element => {
   type AvatarProfileStyle = {
     imgBox: ViewStyle,
     img: ImageStyle,
@@ -153,32 +147,32 @@ const ProfileInfo = () : React.JSX.Element => {
         <View style={[avatarProfileStyle.container]}>
           <TouchableOpacity style={[avatarProfileStyle.imgBox]}>
             <Image style={[avatarProfileStyle.img]}
-            source={{uri: 'https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x4.jpg'}}
+            source={{uri: details.user.avatar}}
             />
           </TouchableOpacity>
-          <Text style={[avatarProfileStyle.userFullName]}>Nguyễn Tuấn</Text>
         </View>
         <View style={[statOverallStyle.container]}>
           <View>
-            <Text style={[statOverallStyle.topText]}>0</Text>
-            <Text style={[statOverallStyle.bottomText]}>bài viết</Text>
+            <Text style={[statOverallStyle.topText]}>{details.stats.videoCounts}</Text>
+            <Text style={[statOverallStyle.bottomText]}>Bài viết</Text>
           </View>
           <View>
-            <Text style={[statOverallStyle.topText]}>2</Text>
+            <Text style={[statOverallStyle.topText]}>{details.stats.followersCounts}</Text>
             <Text style={[statOverallStyle.bottomText]}>Người theo dõi</Text>
           </View>
           <View>
-            <Text style={[statOverallStyle.topText]}>5</Text>
+            <Text style={[statOverallStyle.topText]}>{details.stats.followingCounts}</Text>
             <Text style={[statOverallStyle.bottomText]}>Đang theo dõi</Text>
           </View>
         </View>
       </View>
       <View style={[descriptionStyle.wrapper]}>
-        <Text style={[descriptionStyle.descriptionText]}>- Giới tính: Nam</Text>
-        <Text style={[descriptionStyle.descriptionText]}>- Quốc gia: Việt Nam</Text>
-        <Text style={[descriptionStyle.descriptionText]}>- Sống tại: 31 / 8B Khu phố 4 Thị Trấn Hòa Thành</Text>
+        <Text style={[avatarProfileStyle.userFullName]}>{details.user.fullName}</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Giới tính: {details.user.gender ? 'Nam' : 'Nữ'}</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Quốc gia: {details.user.country || 'Chưa thiết lập'}</Text>
+        <Text style={[descriptionStyle.descriptionText]}>- Sống tại: {details.user.address || 'Chưa thiết lập'}</Text>
         <Text style={[descriptionStyle.descriptionText, {fontWeight: 'bold'}]}>Mô tả:</Text>
-        <Text style={[descriptionStyle.descriptionText]}>Tôi là sinh viên trường đại học nông lâm</Text>
+        <Text style={[descriptionStyle.descriptionText]}>{details.user.bio || 'Chưa thiết lập'}</Text>
       </View>
     </View>
   );
@@ -389,14 +383,54 @@ const Test = () => {
 
 export default function ProfileScreen() : React.ReactElement {
   const navigation = useNavigation<any>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const userRepository = useMemo(() => new UserRepository(), []);
+  const [pageDetails, setPageDetails] = useState<ClientView_UserPageDetailsDTO | undefined>(undefined);
+  const USER_ID = '91301499-9a07-4d92-a993-0e55456af54c';
+  useEffect(() => {
+    setIsLoading(() => true);
+    userRepository.getUserPage(USER_ID).then(response => {
+      console.log('result: ', response.result);
+      setPageDetails(() => response.result);
+      setIsLoading(() => false);
+    });
+  }, [userRepository]);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView nestedScrollEnabled contentContainerStyle={{flexGrow: 1}}>
-        <ProfileHeader/>
-        <ProfileInfo/>
-        <ProfileActions onPressEditProfile={() => navigation.navigate('Profile Settings Stack Screen')}/>
-        <ExploreFriends/>
-        <Test/>
+        {isLoading &&
+        <View style={{
+          backgroundColor: 'black',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1,
+        }}>
+          <View style={{flexDirection: 'row', width: '100%', gap: 10, alignItems: 'center', justifyContent: 'center'}}>
+            <ActivityIndicator size={20} animating={true} color={MD2Colors.green700} />
+            <Text style={{color: 'white', fontSize: 13, fontWeight: 'bold'}}>Bạn đợi tí ...</Text>
+          </View>
+        </View>
+        }
+        {
+          !isLoading && pageDetails &&
+          <>
+            <ProfileHeader details={pageDetails}/>
+            <ProfileInfo details={pageDetails}/>
+            <ProfileActions onPressEditProfile={() => navigation.navigate('Profile Settings Stack Screen', {
+              profileInfo: {
+                avatarLink: pageDetails.user.avatar,
+                fullName: pageDetails.user.fullName,
+                gender: pageDetails.user.gender,
+                country: pageDetails.user.country,
+                address: pageDetails.user.address,
+                bio: pageDetails.user.bio,
+              },
+            })}/>
+            <ExploreFriends/>
+            <Test/>
+          </>
+        }
       </ScrollView>
     </SafeAreaView>
   );

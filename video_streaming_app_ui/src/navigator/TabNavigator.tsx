@@ -113,7 +113,9 @@ export default function TabNavigator () : React.JSX.Element {
         }),
       };
     }}>
-      <Tab.Screen name="Home Navigator" component={HomeNavigator} />
+      <Tab.Screen options={{
+        unmountOnBlur: true,
+      }} name="Home Navigator" component={HomeNavigator} />
       <Tab.Screen name="Search Navigator" component={SearchNavigator} />
       <Tab.Screen name="Reel Screen" component={ReelScreen}
         listeners={{

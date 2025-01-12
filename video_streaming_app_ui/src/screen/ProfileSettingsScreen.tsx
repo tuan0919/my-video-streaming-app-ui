@@ -1,13 +1,14 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import React, { useMemo } from 'react';
+import { Image, KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ViewStyle } from 'react-native';
 import { TextStyle } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import IconFeather from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { RadioButton, TextInput } from 'react-native-paper';
+import { UpdateProfileRequest, UserRepository } from '../repository';
 
 const HeaderNavigation = () : React.JSX.Element => {
     type HeaderNavigation_Stype = {
@@ -52,6 +53,8 @@ const HeaderNavigation = () : React.JSX.Element => {
 };
 
 const AvatarSetting = () : React.JSX.Element => {
+    const route = useRoute<any>();
+    const {profileInfo} = route.params;
     type AvatarSetting_Style = {
         container?: ViewStyle,
         button_wrapper?: ViewStyle,
@@ -91,7 +94,7 @@ const AvatarSetting = () : React.JSX.Element => {
                 borderRadius: 50,
             }]}>
                 <Image
-                source={{uri: 'https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_3x4.jpg'}}
+                source={{uri: profileInfo.avatarLink}}
                 style={{width: '100%', height: '100%'}}
                 />
             </View>
@@ -100,8 +103,9 @@ const AvatarSetting = () : React.JSX.Element => {
     );
 };
 
-const AccountFieldsSetting = () : React.JSX.Element => {
-    const [checked, setChecked] = React.useState('first');
+const AccountFieldsSetting = ({onUpdateProfile} : {onUpdateProfile : (request : UpdateProfileRequest) => Promise<string | undefined> }) : React.JSX.Element => {
+    const route = useRoute<any>();
+    const {profileInfo} = route.params;
     type AccountFieldsSetting_Style = {
         container?: ViewStyle,
         label?: TextStyle,
@@ -171,32 +175,39 @@ const AccountFieldsSetting = () : React.JSX.Element => {
             fontWeight: 'bold',
         },
     }), []);
+    const [fullName, setFullName] = useState(profileInfo.fullName);
+    const [gender, setGender] = useState(profileInfo.gender);
+    const [country, setCountry] = useState(profileInfo.country);
+    const [address, setAddress] = useState(profileInfo.address);
+    const [bio, setBio] = useState(profileInfo.bio);
     return (
-        <View style={[style.container]}>
+        <ScrollView>
+            <KeyboardAvoidingView style={[style.container]}>
             <TextInput
                 style={[style.input_field]}
                 mode="outlined"
                 label={<Text style={[style.label]}>Họ và tên</Text>}
                 activeOutlineColor="green"
-                value="Nguyễn Quốc Anh Tuấn"
+                value={fullName}
+                onChangeText={setFullName}
                 outlineColor="green"
                 textColor="white"
             />
             <View style={[style.radio_group]}>
-                <TouchableOpacity onPress={() => setChecked('first')} style={[style.radio_wrapper]}>
+                <TouchableOpacity onPress={() => setGender(() => true)} style={[style.radio_wrapper]}>
                     <Text style={[style.radio_label]}>Nam</Text>
                     <RadioButton
                         value="first"
-                        status={ checked === 'first' ? 'checked' : 'unchecked' }
+                        status={ gender ? 'checked' : 'unchecked' }
                         uncheckedColor="green"
                         color="green"
                     />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setChecked('second')} style={[style.radio_wrapper]}>
+                <TouchableOpacity onPress={() => setGender(() => false)} style={[style.radio_wrapper]}>
                     <Text style={[style.radio_label]}>Nữ</Text>
                     <RadioButton
                         value="second"
-                        status={ checked === 'second' ? 'checked' : 'unchecked' }
+                        status={ !gender ? 'checked' : 'unchecked' }
                         uncheckedColor="green"
                         color="green"
                     />
@@ -207,7 +218,8 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 mode="outlined"
                 label={<Text style={[style.label]}>Quốc gia</Text>}
                 activeOutlineColor="green"
-                value="Việt Nam"
+                onChangeText={setCountry}
+                value={country}
                 outlineColor="green"
                 textColor="white"
             />
@@ -216,7 +228,8 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 mode="outlined"
                 label={<Text style={[style.label]}>Địa chỉ</Text>}
                 activeOutlineColor="green"
-                value="31 / 8B Khu phố 4 Thị Trấn Hòa Thành"
+                onChangeText={setAddress}
+                value={address}
                 outlineColor="green"
                 textColor="white"
             />
@@ -232,19 +245,23 @@ const AccountFieldsSetting = () : React.JSX.Element => {
                 activeOutlineColor="green"
                 outlineColor="green"
                 textColor="white"
-                value="Tôi là sinh viên trường đại học nông lâm"
+                onChangeText={setBio}
+                value={bio}
             />
-            <TouchableOpacity style={[style.button_action_wrapper]}>
+            <TouchableOpacity style={[style.button_action_wrapper]} onPress={() => onUpdateProfile({
+                fullName, address, bio, country, gender,
+            })}>
                 <View style={[style.button_edit]}>
                     <Text style={[style.button_text]}>Cập nhật trang cá nhân</Text>
                     <IconFeather name="edit" color={'black'} size={20}/>
                 </View>
             </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
+        </ScrollView>
     );
 };
 
-const NotificationSuccess = () => {
+const NotificationSuccess = ({message} : {message : string}) => {
     return (
         <View style={{flexDirection: 'row',
             gap: 10, alignItems: 'center',
@@ -264,7 +281,7 @@ const NotificationSuccess = () => {
             <IconAntDesign name="checkcircleo" color={'green'} size={30}/>
             <View style={[{gap: 10, flex: 1}]}>
                 <Text style={{fontWeight: 'bold', color: 'white'}}>Cập nhật thành công</Text>
-                <Text style={{color: 'darkgreen'}}>Bạn đã cập nhật lại thông tin cá nhân. Vui lòng refresh để thấy thay đổi.</Text>
+                <Text style={{color: 'darkgreen'}}>{message}</Text>
             </View>
             <IconAntDesign name="close" color={'green'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
         </View>
@@ -272,7 +289,7 @@ const NotificationSuccess = () => {
 };
 
 
-const NotificationFailed = () => {
+const NotificationFailed = ({message} : {message : string}) => {
     return (
         <View style={{flexDirection: 'row',
             gap: 10, alignItems: 'center',
@@ -292,7 +309,7 @@ const NotificationFailed = () => {
             <IconAntDesign name="closecircleo" color={'darkred'} size={30}/>
             <View style={[{gap: 10, flex: 1}]}>
                 <Text style={{fontWeight: 'bold', color: 'white'}}>Cập nhật thất bại</Text>
-                <Text style={{color: 'darkred'}}>Thông tin bạn điền không hợp lệ, kiểm tra lại.</Text>
+                <Text style={{color: 'darkred'}}>{message}</Text>
             </View>
             <IconAntDesign name="close" color={'darkred'} size={20} style={{position: 'absolute', right: 5, top: 5}}/>
         </View>
@@ -311,14 +328,49 @@ const ProfileSettingsScreen = () : React.JSX.Element => {
             position: 'relative',
         },
     }), []);
+    const userRepository = useMemo(() => new UserRepository(), []);
+    const [hasError, setHasError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const [hasSuccess, setHasSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string>('');
+    useEffect(() => {
+        if (hasError) {
+            const timer = setTimeout(() => {
+                setHasError(false); // Tự động ẩn thông báo
+                setErrorMessage(''); // Xóa message sau khi ẩn
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [hasError]);
+    useEffect(() => {
+        if (hasSuccess) {
+            const timer = setTimeout(() => {
+                setHasSuccess(false); // Tự động ẩn thông báo
+                setSuccessMessage(''); // Xóa message sau khi ẩn
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [hasSuccess]);
     return (
         <>
-            <NotificationFailed/>
+            {/* <NotificationFailed/> */}
             <View style={[style.container]}>
                 <HeaderNavigation/>
                 <AvatarSetting/>
-                <AccountFieldsSetting/>
+                <AccountFieldsSetting onUpdateProfile={async (request) => {
+                    try {
+                        const resp = await userRepository.updateProfile(request);
+                        setHasSuccess(true);
+                        setSuccessMessage(() => 'Cập nhật profile thành công, refresh lại để nhận thấy thay đổi');
+                        return resp.result;
+                    } catch (error : any) {
+                        setErrorMessage(error.message);
+                        setHasError(() => true);
+                    }
+                }}/>
             </View>
+            {hasError && <NotificationFailed message={errorMessage} />}
+            {hasSuccess && <NotificationSuccess message={successMessage} />}
         </>
     );
 };
