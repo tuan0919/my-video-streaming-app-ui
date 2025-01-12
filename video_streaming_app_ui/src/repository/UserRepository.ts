@@ -30,6 +30,18 @@ export interface UpdateProfileRequest {
     bio: string,
 }
 
+export interface ClientView_SearchUserDTO {
+    user : {
+        userId: string,
+        username: string,
+        avatar: string,
+        bio: string,
+    },
+    stat: {
+        followersCounts: number,
+    }
+}
+
 export default class UserRepository {
     private AGGREGATOR_URL = `http://${HOST}:8989/api/v1/aggregator`;
     private PROFILE_URL = `http://${HOST}:8989/api/v1/profile`;
@@ -50,5 +62,13 @@ export default class UserRepository {
         });
         return response.data;
     };
+    searchUser = async ({page, pageSize, username} : {page: number, pageSize: number, username: string}): Promise<ApiResponse<ClientView_SearchUserDTO[]>> => {
+        const response = await axios.get<ApiResponse<ClientView_SearchUserDTO[]>>(`${this.AGGREGATOR_URL}/query/search/user?page=${page}&pageSize=${pageSize}&username=${username}`, {
+            headers: {
+                Authorization: `Bearer ${this.CONST_TOKEN}`,
+            },
+        });
+        return response.data;
+    }
 }
 

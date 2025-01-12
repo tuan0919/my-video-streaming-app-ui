@@ -5,7 +5,7 @@ import { Notification } from './NotificationRepository';
 import CommentRepository from './CommentRepository';
 import { CommentDetails, CommentCreationRequestDTO, CommentResponse, InteractCommentRequest } from './CommentRepository';
 import { UnreadCountResponse } from './NotificationRepository';
-import UserRepository, { ClientView_UserPageDetailsDTO, UpdateProfileRequest } from './UserRepository';
+import UserRepository, { ClientView_SearchUserDTO, ClientView_UserPageDetailsDTO, UpdateProfileRequest } from './UserRepository';
 
 export {
     VideoRepository,
@@ -23,5 +23,6 @@ export type {
     UnreadCountResponse,
     ClientView_UserPageDetailsDTO,
     UpdateProfileRequest,
+    ClientView_SearchUserDTO,
 };
 

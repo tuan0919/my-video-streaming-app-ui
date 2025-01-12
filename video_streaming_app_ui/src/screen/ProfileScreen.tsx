@@ -1,5 +1,5 @@
-import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, useWindowDimensions, View, ViewStyle} from 'react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import {FlatList, Image, ImageStyle, SafeAreaView, ScrollView, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text } from 'react-native';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
@@ -7,9 +7,8 @@ import posted_posts from '../data/user-profile-posted.json';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ExploreFriends } from '../component';
 import { useNavigation } from '@react-navigation/native';
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
-import { ClientView_UserPageDetailsDTO, UserRepository } from '../repository';
+import { ClientView_UserPageDetailsDTO, UserRepository, VideoDetails, VideoRepository } from '../repository';
 
 type Post = {
   image: string,
@@ -213,39 +212,8 @@ const ProfileActions = ({onPressEditProfile} : {onPressEditProfile: () => void})
   );
 };
 
-const ProfilePostArchived = () : React.JSX.Element => {
-  type ProfilePostArchivedStyle = {
-    container: ViewStyle,
-    title_wrapper: ViewStyle,
-    title_text: TextStyle,
-    title_icon: TextStyle,
-  };
-  const style = useMemo<ProfilePostArchivedStyle>(() => ({
-    container: {
 
-    },
-    title_wrapper: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    title_text: {
-      color: 'white',
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
-    title_icon: {
-      color: 'white',
-      fontSize: 20,
-    },
-  }), []);
-  return (
-    <Text style={{color: 'white'}}>Hello there</Text>
-  );
-};
-
-
-const PostCard = ({post} : {post : Post}) : React.JSX.Element => {
+const PostCard = ({post} : {post : VideoDetails}) : React.JSX.Element => {
   type PostCardStyle = {
     container: ViewStyle,
     img_wrapper: ViewStyle,
@@ -300,16 +268,16 @@ const PostCard = ({post} : {post : Post}) : React.JSX.Element => {
   return (
     <TouchableOpacity style={[style.container]}>
       <View style={[style.img_wrapper]}>
-        <Image source={{uri: post.image}} style={[style.post_img]}/>
+        <Image source={{uri: post.stat.thumbnail}} style={[style.post_img]}/>
       </View>
       <View style={[style.info_wrapper]}>
         <View style={[style.info_stat]}>
           <IconFontAwesome name="eye" style={[style.icon]}/>
-          <Text style={[style.text]}>{post.view}</Text>
+          <Text style={[style.text]}>{post.stat.viewCount}</Text>
         </View>
         <View style={[style.info_stat]}>
           <IconFontAwesome name="comment-o" style={[style.icon]}/>
-          <Text style={[style.text]}>{post.comments}</Text>
+          <Text style={[style.text]}>{post.stat.commentCount}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -342,41 +310,22 @@ const ProfilePostedPost = () : React.JSX.Element => {
       fontSize: 20,
     },
   }), []);
+  const videoRepository = useMemo(() => new VideoRepository(), []);
+  const [posted, setPosted] = useState<VideoDetails[]>();
+  const USER_ID = '91301499-9a07-4d92-a993-0e55456af54c';
+  const fetchVideoPostedByUser = useCallback(async () => {
+    const response = await videoRepository.getVideoPostedBy({userId: USER_ID, page: 0, pageSize: 4});
+    setPosted(() => response.result);
+  }, [videoRepository]);
+  useEffect(() => {
+    fetchVideoPostedByUser();
+  });
   return (
     <View style={[style.container]}>
-      <FlatList horizontal={true} data={data} renderItem={({item : post}) => {
+      <Text style={[style.title_text]}>Video đã đăng</Text>
+      <FlatList horizontal={true} data={posted} renderItem={({item : post}) => {
         return <PostCard post={post}/>;
       }}/>
-    </View>
-  );
-};
-const Test = () => {
-  const layout = useWindowDimensions();
-  const [index, setIndex] = React.useState(0);
-  const routes = [
-    { key: 'first', title: 'Video đã lưu' },
-    { key: 'second', title: 'Video đã đăng' },
-  ];
-  return (
-    <View style={{height: 400}}>
-      <TabView
-      navigationState={{ index, routes }}
-      renderScene={SceneMap({
-        first: ProfilePostedPost,
-        second: ProfilePostedPost,
-      })}
-      renderTabBar={(props) => {
-        return (
-          <TabBar
-            {...props}
-            style={{backgroundColor: 'black'}}
-            indicatorStyle={{backgroundColor: 'white'}}
-          />
-        );
-      }}
-      onIndexChange={setIndex}
-      initialLayout={{ width: layout.width }}
-      />
     </View>
   );
 };
@@ -428,7 +377,7 @@ export default function ProfileScreen() : React.ReactElement {
               },
             })}/>
             <ExploreFriends/>
-            <Test/>
+            <ProfilePostedPost/>
           </>
         }
       </ScrollView>

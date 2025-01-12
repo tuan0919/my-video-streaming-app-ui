@@ -1,10 +1,11 @@
 import {Dimensions, FlatList, Image, ImageStyle, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View, ViewStyle} from 'react-native';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { TabBar, TabView } from 'react-native-tab-view';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import search_users from '../data/search_users.json';
-import search_video_links from '../data/searchVideos.json';
+import { ClientView_SearchVideoDTO } from '../repository/VideoRepository';
+import { ClientView_SearchUserDTO, UserRepository, VideoRepository } from '../repository';
 const SearchPost = ({link}: {link : string}) => {
   type SearchPost_Style = {
     image?: ImageStyle,
@@ -29,19 +30,12 @@ const SearchPost = ({link}: {link : string}) => {
   );
 };
 
-const SearchPostContent = () => {
-  const [data, setData] = useState<any[]>(search_video_links);
+const SearchPostContent = ({data, onLoadMore} : {data: ClientView_SearchVideoDTO[],
+  onLoadMore : () => Promise<void>}) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   type SearchPostContent_Style = {
     container?: ViewStyle,
   }
-  const fetchMorePosts = useCallback(async () => {
-    setIsLoading(true);
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await wait(2000);
-    setData(currentData => [...currentData, undefined]);
-    setIsLoading(false);
-  }, []);
   const {width} = Dimensions.get('window');
   const LoadingFooter = useMemo(() => {
     return (
@@ -54,7 +48,9 @@ const SearchPostContent = () => {
         width: width,
       }}>
       { !isLoading ?
-        <TouchableOpacity onPress={fetchMorePosts}>
+        <TouchableOpacity onPress={() => {
+          onLoadMore();
+        }}>
           <Text style={{color: 'green', fontSize: 13, fontWeight: 'bold'}}>
             - Tải thêm video -
           </Text>
@@ -67,7 +63,7 @@ const SearchPostContent = () => {
       }
       </View>
     );
-  }, [width, isLoading, fetchMorePosts]);
+  }, [width, isLoading, onLoadMore]);
   const style = useMemo<SearchPostContent_Style>(() => ({
     container: {
       backgroundColor: 'black',
@@ -81,11 +77,11 @@ const SearchPostContent = () => {
   }), []);
   return (
     <FlatList
-      data={[]}
-      renderItem={({item : link}) => <SearchPost link={link}/>}
+      data={data}
+      renderItem={({item}) => <SearchPost link={item.thumbnail}/>}
       keyExtractor={(_, index) => index.toString()}
       contentContainerStyle={[style.container]}
-      // ListFooterComponent={LoadingFooter}
+      ListFooterComponent={LoadingFooter}
       ListEmptyComponent={
         <View style={{flexDirection: 'row', padding: 10, justifyContent: 'center', width: '100%'}}>
           <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold'}}>Kết quả tìm kiếm trống...</Text>
@@ -102,28 +98,22 @@ type UserAccount = {
   bio: string,
 }
 
-const UserAccount = ({user} : {user: UserAccount}) => {
+const UserAccount = ({user} : {user: ClientView_SearchUserDTO}) => {
   return (
     <TouchableOpacity style={{flexDirection: 'row', gap: 20, alignItems: 'center', width: '90%'}}>
       <View style={[{borderWidth: 2, borderRadius: 50, borderColor: 'white', width: 60, height: 60, overflow: 'hidden'}]}>
-        <Image source={{uri: user.avatar}} style={[{width: '100%', height: '100%'}]}/>
+        <Image source={{uri: user.user.avatar}} style={[{width: '100%', height: '100%'}]}/>
       </View>
       <View style={[{maxWidth: '50%'}]}>
-        <Text style={[{fontWeight: 'bold', color: 'white'}]}>@{user.username}</Text>
-        <Text style={[{color: 'white'}]} numberOfLines={1}>{user.bio}</Text>
-        <Text style={[{color: '#777777'}]}>Có {user.follow} người theo dõi</Text>
+        <Text style={[{fontWeight: 'bold', color: 'white'}]}>@{user.user.username}</Text>
+        <Text style={[{color: 'white'}]} numberOfLines={1}>{user.user.bio}</Text>
+        <Text style={[{color: '#777777'}]}>Có {user.stat.followersCounts} người theo dõi</Text>
       </View>
     </TouchableOpacity>
   );
 };
 
-const SearchUserContent = () => {
-  const [data, setData] = useState<UserAccount[]>(search_users);
-  const fetchMoreUsers = useCallback(async () => {
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await wait(2000);
-    setData(currentData => [...currentData, ...search_users]);
-  }, []);
+const SearchUserContent = ({data, onLoadMore} : {data : ClientView_SearchUserDTO[], onLoadMore : () => Promise<void>}) => {
   const {width} = Dimensions.get('window');
   const LoadingFooter = useMemo(() => {
     return (
@@ -152,23 +142,18 @@ const SearchUserContent = () => {
     }}
     data={data}
     renderItem={({item}) => <UserAccount user={item}/>}
-    ListFooterComponent={LoadingFooter}
-    // onEndReached={fetchMoreUsers}
+    onEndReached={onLoadMore}
+    ListEmptyComponent={
+      <View style={{flexDirection: 'row', padding: 10, justifyContent: 'center', width: '100%'}}>
+        <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold'}}>Kết quả tìm kiếm trống...</Text>
+      </View>
+    }
     />
   );
 };
 
-const renderScene = SceneMap({
-  first: SearchPostContent,
-  second: SearchUserContent,
-});
-
-const routes = [
-  { key: 'first', title: 'Video' },
-  { key: 'second', title: 'Người dùng' },
-];
-
-const SearchBar = () : React.JSX.Element => {
+const SearchBar = ({onSearch} : {onSearch : (value : string) => Promise<void>}) : React.JSX.Element => {
+  const [value, setValue] = useState<string>();
   return (
     <View style={{backgroundColor: 'black', padding: 10}}>
       <View style={{
@@ -185,7 +170,15 @@ const SearchBar = () : React.JSX.Element => {
           style={{color: 'white', fontSize: 13}}
           placeholderTextColor={'white'}
           textAlign="left"
+          value={value}
+          onChangeText={setValue}
         />
+        <TouchableOpacity style={{marginLeft: 'auto'}} onPress={() => {
+          console.log('value: ', value);
+          value && onSearch(value);
+        }}>
+          <FeatherIcon size={20} color={'white'} name="send" />
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -194,13 +187,73 @@ const SearchBar = () : React.JSX.Element => {
 export default function SearchScreen():React.ReactElement {
   const [index, setIndex] = React.useState(0);
   const layout = useWindowDimensions();
+  const videoRepository = useMemo(() => new VideoRepository(), []);
+  const userRepository = useMemo(() => new UserRepository(), []);
+  const [videos, setVideos] = useState<ClientView_SearchVideoDTO[]>([]);
+  const [users, setUsers] = useState<ClientView_SearchUserDTO[]>([]);
+  const [searchValue, setSearchValue] = useState<string>();
+  const [page, setPage] = useState<number>(0);
+  const routes = useMemo(() => [
+    { key: 'video', title: 'Video', data: videos },
+    { key: 'user', title: 'Người dùng', data: users },
+  ], [videos, users]);
+  const handleSearch = useCallback(async (value : string, searchPage : number) => {
+    console.log('start fetch');
+    try {
+      if (index === 0) {
+        const response = await videoRepository.searchVideo({
+          page : searchPage, pageSize: 2, title: value,
+        });
+        setVideos((prev) => [...prev, ...response.result]);
+      } else {
+        const response = await userRepository.searchUser({
+          page : searchPage, pageSize: 2, username: value,
+        });
+        setUsers((prev) => [...prev, ...response.result]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [index, videoRepository, userRepository]);
+  const renderScene = ({ route }: { route: { key: string; data?: any } }) => {
+    switch (route.key) {
+      case 'video':
+        return <SearchPostContent data={route.data as ClientView_SearchVideoDTO[]}
+        onLoadMore={async () => {
+          searchValue && handleSearch(searchValue, page);
+          setPage(prev => prev + 1);
+          return;
+        }}/>;
+      case 'user':
+        return <SearchUserContent data={route.data as ClientView_SearchUserDTO[]}
+        onLoadMore={async () => {
+          searchValue && handleSearch(searchValue, page);
+          setPage(prev => prev + 1);
+          return;
+        }}/>;
+      default:
+        return null;
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
-      <SearchBar/>
+      <SearchBar onSearch={async (value) => {
+        setPage(() => 0);
+        index === 0 && setVideos(() => []);
+        setSearchValue(() => value);
+        handleSearch(value, page);
+        setPage(() => 1);
+        return;
+      }}/>
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
-        onIndexChange={setIndex}
+        onIndexChange={index => {
+          setVideos(() => []);
+          setUsers(() => []);
+          setIndex(() => index);
+          setPage(() => 0);
+        }}
         initialLayout={{ width: layout.width }}
         renderTabBar={(props) => {
           return (
